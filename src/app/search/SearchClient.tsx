@@ -1,0 +1,112 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import type { VideoItem } from "@/lib/types";
+import VideoCard from "@/components/shelf/VideoCard";
+
+export default function SearchClient({
+  initialQuery,
+  initialResults,
+}: {
+  initialQuery: string;
+  initialResults: VideoItem[];
+}) {
+  const router = useRouter();
+  const [q, setQ] = useState(initialQuery);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = q.trim();
+    if (!trimmed) return;
+    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+  }
+
+  return (
+    <section className="px-4 pb-24 pt-28 sm:px-6 md:px-8">
+      <div className="mx-auto max-w-[1240px]">
+        <form onSubmit={submit} className="mb-10">
+          <label htmlFor="catalogue-search" className="eyebrow mb-3 block text-muted">Search the catalogue</label>
+          <div className="flex items-center gap-3 rounded-full border border-border bg-surface px-4 py-3 transition-colors duration-hover ease-ui focus-within:border-accent sm:px-5">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              className="h-5 w-5 text-muted"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.5-3.5" />
+            </svg>
+            <input
+              id="catalogue-search"
+              ref={inputRef}
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Vox, Veritasium, type design, tide pools…"
+              className="flex-1 bg-transparent text-base text-fg outline-none placeholder:text-muted"
+            />
+            <button
+              type="submit"
+              className="min-h-11 rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-fg transition-[transform,background-color] hover:bg-accent-hover active:scale-[0.97] active:duration-press active:ease-press"
+            >
+              Search
+            </button>
+          </div>
+        </form>
+
+        {initialQuery ? (
+          <>
+            <h1 className="font-display text-2xl font-semibold tracking-heading">
+              Results for <span className="text-accent">{initialQuery}</span>
+            </h1>
+            <p className="meta mt-2 text-muted">
+              {initialResults.length} {initialResults.length === 1 ? "match" : "matches"}
+            </p>
+
+            {initialResults.length === 0 ? (
+              <div className="mt-12 rounded-xl border border-border bg-surface p-8 text-center sm:p-10">
+                <p className="font-display text-lg font-medium">No matches.</p>
+                <p className="prose mx-auto mt-2 text-muted">
+                  Try a creator name (Veritasium, Vox) or a topic (architecture, ocean,
+                  type design).
+                </p>
+              </div>
+            ) : (
+              <div
+                className="mt-8 grid gap-x-5 gap-y-10"
+                style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}
+              >
+                {initialResults.map((v) => (
+                  <VideoCard key={v.id} video={v} />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="rounded-xl border border-border bg-surface p-8 sm:p-10">
+            <p className="eyebrow text-accent">Try one of these</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {["Veritasium", "Kurzgesagt", "Vox", "MKBHD", "Architecture", "Tide pools", "Type design"].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => router.push(`/search?q=${encodeURIComponent(s)}`)}
+                  className="min-h-11 rounded-full border border-border bg-bg px-4 py-2 text-sm font-medium text-fg-2 transition-[transform,color,border-color] hover:border-accent hover:text-accent active:scale-[0.97] active:duration-press active:ease-press"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}

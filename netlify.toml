@@ -1,0 +1,27 @@
+# Netlify Configuration for Next.js (App Router)
+# Reference: https://docs.netlify.com/integrations/next-js/
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Ensure the Node version matches modern Next.js expectations
+  NODE_VERSION = "20"
+  # Disable Next.js telemetry during builds to speed up the process
+  NEXT_TELEMETRY_DISABLED = "1"
+
+[[plugins]]
+  # Essential Next.js Plugin for SSR, API routes, ISR, and dynamic imports
+  package = "@netlify/plugin-nextjs"
+
+# Cache policy for static assets to improve performance
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

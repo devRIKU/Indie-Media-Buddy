@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YouPlus
 
-## Getting Started
+Premium streaming, curated from YouTube — Vox, Veritasium, Kurzgesagt, MKBHD,
+The Great Art Explained, Nerdwriter, and friends. Arranged like Apple TV+ /
+Criterion Channel.
 
-First, run the development server:
+## Stack
+
+- Next.js 14 (App Router) + TypeScript
+- Tailwind CSS, dark editorial theme, single warm-amber accent
+- Bricolage Grotesque (display) + Geist Sans (body) + Geist Mono (meta)
+- YouTube IFrame Player API for playback (no API key required)
+- YouTube Data API v3 for live metadata (optional)
+- localStorage for personal state (Continue Watching, My List)
+
+## Run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app ships with **curated mock data** — real YouTube video IDs from premium
+creators, thumbnails loaded directly from `i.ytimg.com`. It looks like a real
+product without an API key.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Flip to live mode
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` → `.env.local`:
 
-## Learn More
+```
+YOUTUBE_API_KEY=AIzaSy...
+```
 
-To learn more about Next.js, take a look at the following resources:
+Get a key at https://console.cloud.google.com/apis/credentials. Enable the
+YouTube Data API v3 — free 10,000 units / day, easily covers a small site.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+When the key is present:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Page | What goes live |
+|---|---|
+| `/`                  | Rails fetch latest videos from each curated channel |
+| `/watch/[videoId]`   | Real video metadata, real related videos, real channel data |
+| `/search?q=...`      | Real YouTube search results (top 24, by relevance) |
+| `/category/[slug]`   | Latest from each channel in the category cluster |
+| `/channel/[id]`      | Channel info + recent uploads |
 
-## Deploy on Vercel
+Results are cached two ways:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **In-memory cache** (5 min default, 1 hr for channel videos, 12 hr for
+   channel info). Process-wide, no extra service.
+2. **Next.js ISR** at the route level (`revalidate = 3600`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Net: typical browsing uses <500 quota units/day even with 100 daily visitors.
+
+## Routes
+
+```
+/                       Home — hero + 7 curated rails
+/watch/[videoId]        Watch page (YouTube embed + cover overlay)
+/search?q=...           Search across YouTube
+/category/[slug]        Category grids: science, essays, shows, movies, design, nature, art
+/channel/[id]           Creator page
+/my-list                Saved items + Continue Watching (localStorage)
+/api/videos?ids=a,b,c   Resolves IDs → VideoItems (powers client-side surfaces)
+```
+
+## Architecture
+
+```
+src/
+├── app/
+│   ├── layout.tsx              # LeftRail + TopNav shell, font loading
+│   ├── page.tsx                # Home (hero + rails)
+│   ├── watch/[videoId]/        # Watch page + YouTube embed
+│   ├── search/                 # Search
+│   ├── category/[slug]/        # Category grids
+│   ├── channel/[id]/           # Creator pages
+│   ├── my-list/                # Personal lists (client-side)
+│   └── api/videos/             # ID → VideoItem resolver
+├── components/
+│   ├── nav/                    # LeftRail, TopNav
+│   ├── hero/CinematicHero.tsx  # Auto-rotating featured carousel
+│   ├── shelf/                  # Rail, PosterCard, VideoCard
+│   ├── player/                 # YouTubeEmbed (with progress tracking), PlayerCover
+│   └── ui/ProgressiveBlur.tsx  # Apple-esque layered backdrop blur primitive
+└── lib/
+    ├── catalog.ts              # Curated channel directory + rail defs
+    ├── mock-data.ts            # Real YT video IDs as fallback data
+    ├── youtube.ts              # YouTube Data API wrapper (server-only)
+    ├── data.ts                 # Unified data layer (live → mock fallback)
+    ├── storage.ts              # localStorage (My List, Continue Watching) + React hooks
+    ├── format.ts               # View / date / duration helpers
+    └── types.ts
+```
+
+## Editorial curation
+
+Add channels in `src/lib/catalog.ts` under `PREMIUM_CHANNELS`. Create a new
+rail by adding an entry to `RAILS` with a list of `channelIds`. Reorder the
+home page by editing `HOME_RAIL_ORDER`. Map a category route to a channel
+cluster in `src/lib/data.ts` → `CATEGORY_TO_CHANNELS`.
+
+## Legality
+
+YouPlus does not host video. All playback is via YouTube's official IFrame
+embed (`youtube-nocookie.com`) which respects creator monetisation and counts
+views toward the creator. Think of YouPlus as a hand-set magazine cover for
+the open YouTube catalog — a beautiful shelf, not a re-broadcast.
