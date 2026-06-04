@@ -1,5 +1,6 @@
 import CinematicHero from "@/components/hero/CinematicHero";
 import Rail from "@/components/shelf/Rail";
+import RecommendedRail from "@/components/shelf/RecommendedRail";
 import { RAILS, HOME_RAIL_ORDER } from "@/lib/catalog";
 import { getHero, getRailVideos } from "@/lib/data";
 
@@ -24,6 +25,7 @@ export default async function HomePage() {
       <CinematicHero items={heroItems} />
 
       <div className="relative z-10 -mt-12 space-y-10 pb-24 sm:-mt-16 md:space-y-16 md:pb-32">
+        <RecommendedRail />
         {railData.map(({ rail, videos }, idx) => (
           <Rail
             key={rail.slug}

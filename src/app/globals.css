@@ -8,23 +8,23 @@
  * Editorial · cinematic · quiet authority.
  * Dark theme by default (evening viewing context).
  *
- * Type system:
- *   - Bricolage Grotesque (display) · Geist Sans (body) · Geist Mono (meta)
- *   - Three variable fonts, self-hosted by next/font (zero layout shift)
- *   - Fixed rem scale at ratio 1.25; ONE fluid clamp for the hero only
- *   - Five weights total across the three families
+ * The system is built around a small, orthogonal set of scales:
+ *   - 5 color ramps (bg / surface / fg / accent / border) all warm-tinted
+ *   - 6 radius tokens (the bounding-box contract — pick one, never arbitrary)
+ *   - 3 shadow tokens (one per elevation tier)
  *
- * Neutrals are warm-tinted toward the amber accent (hue ~55) at very low chroma —
- * this creates subconscious cohesion between brand color and UI surfaces.
- * One accent, used sparingly: primary CTA, active nav state, section eyebrows.
+ * Pure black is BANNED — the warmest dark surface (--bg) is used as the
+ * deepest tone for inner cores, image wells, and the hero still plate.
+ * This keeps the brand cohesion: every dark is a member of the same hue family.
  */
 :root {
   color-scheme: dark;
 
   /* ─────────────── Color ─────────────── */
-  --bg:         oklch(14% 0.012 55);
+  --bg:         oklch(14% 0.012 55);   /* deepest — used for image wells, replaces #000 */
   --surface:    oklch(18% 0.014 55);
   --surface-2:  oklch(22% 0.016 55);
+  --surface-3:  oklch(26% 0.018 55);   /* new — slightly brighter for hero cards */
   --border:     oklch(28% 0.018 55);
   --border-2:   oklch(34% 0.020 55);
 
@@ -39,47 +39,38 @@
   --accent-fg:     oklch(18% 0.04 55);
   --accent-soft:   oklch(72% 0.17 55 / 0.14);
 
-  /* ─────────────── Type families ───────────────
-     --font-display / --font-sans / --font-mono are injected by next/font
-     in app/layout.tsx. We provide a safety fallback chain here for any
-     SSR moment where the variable is briefly unset. */
+  /* ─────────────── Type families ─────────────── */
   --font-display-fallback: "Charter", Georgia, "Times New Roman", serif;
   --font-sans-fallback:    -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-mono-fallback:    ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* ─────────────── Type sizes (fixed rem, ratio 1.25) ─────────────── */
-  --text-xs:      0.75rem;    /* 12px — mono captions, badges */
-  --text-sm:      0.875rem;   /* 14px — secondary UI, channel names */
-  --text-base:    1rem;       /* 16px — BODY. minimum. */
-  --text-lg:      1.25rem;    /* 20px — card titles, watch sidebar h3 */
-  --text-xl:      1.75rem;    /* 28px — rail headings, watch h1 */
-  --text-2xl:     2.5rem;     /* 40px — player-cover title */
-  /* The ONE fluid value — hero display only. App UI everywhere else is fixed. */
+  /* ─────────────── Type sizes ─────────────── */
+  --text-xs:      0.75rem;    /* 12px */
+  --text-sm:      0.875rem;   /* 14px */
+  --text-base:    1rem;       /* 16px — BODY minimum */
+  --text-lg:      1.25rem;    /* 20px */
+  --text-xl:      1.75rem;    /* 28px */
+  --text-2xl:     2.5rem;     /* 40px */
   --text-display: clamp(2.75rem, 6vw, 6rem); /* 44px → 96px */
 
-  /* ─────────────── Weights ─────────────── */
   --fw-regular:  400;
   --fw-medium:   500;
   --fw-semibold: 600;
   --fw-bold:     700;
 
-  /* ─────────────── Line heights ───────────────
-     For light-on-dark we add ~0.05 to body leading per the typography reference. */
-  --lh-display: 0.95;   /* hero */
-  --lh-tight:   1.05;   /* big titles */
-  --lh-snug:    1.15;   /* section headings */
-  --lh-card:    1.3;    /* card titles (2-line clamp) */
-  --lh-meta:    1.5;    /* mono labels */
-  --lh-body:    1.6;    /* body paragraphs */
+  --lh-display: 0.95;
+  --lh-tight:   1.05;
+  --lh-snug:    1.15;
+  --lh-card:    1.3;
+  --lh-meta:    1.5;
+  --lh-body:    1.6;
 
-  /* ─────────────── Tracking ─────────────── */
   --tr-display:  -0.035em;
   --tr-heading:  -0.02em;
   --tr-button:   -0.005em;
   --tr-body:      0;
   --tr-eyebrow:   0.14em;
 
-  /* ─────────────── Measure ─────────────── */
   --measure-body:    65ch;
   --measure-heading: 22ch;
   --measure-display: 18ch;
@@ -94,41 +85,42 @@
   --space-3xl: 48px;
   --space-4xl: 64px;
 
-  /* ─────────────── Shadows (tinted toward the warm hue) ───────────────
-     Pure-black shadows on a warm-tinted dark surface read as cold and
-     digital. We mix the page bg's hue into every shadow so depth feels
-     warm-natural — closer to ambient room shadow under tungsten. */
+  /* ─────────────── Unified radius scale ───────────────
+     The bounding-box contract. Six tokens, mathematically related:
+       lg  = md + 0.25rem    (cards on top of panels)
+       xl  = lg + 0.25rem    (player frame on top of page)
+       2xl = xl + 0.5rem     (hero frame, the outermost)
+     For double-bezel, inner radius = outer - 0.375rem (a fixed offset,
+     not a token), so the curve is always concentric.
+  */
+  --radius-sm:   0.5rem;     /*  8px — chips, micro-elements */
+  --radius-md:   1rem;       /* 16px — buttons, inputs */
+  --radius-lg:   1.25rem;    /* 20px — cards (poster, video) */
+  --radius-xl:   1.5rem;     /* 24px — panels, player frame */
+  --radius-2xl:  2rem;       /* 32px — hero frame, large surfaces */
+
+  /* ─────────────── Shadows (tinted toward the warm hue) ─────────────── */
   --shadow-card:       0 6px 18px -8px oklch(8% 0.02 55 / 0.55);
   --shadow-card-hover: 0 24px 48px -16px oklch(8% 0.02 55 / 0.75),
                        0 4px 12px -6px oklch(8% 0.02 55 / 0.5);
   --shadow-player:     0 30px 90px -20px oklch(8% 0.02 55 / 0.85);
-}
 
-/* ─────────────── Base ─────────────── */
-* {
-  box-sizing: border-box;
-}
-
-:root {
-  /* Easing tokens — Emil's principle: built-in CSS easings lack punch.
-     Each token has a specific job; do not mix them across contexts.
-     - press     : button feedback. Strong out-curve, very fast settle.
-     - ui        : default for hovers and small state changes.
-     - movement  : on-screen movement / morphs (drawer-ish).
-     - reveal    : scroll-in / entry animations. Slowest, most graceful.
-  */
+  /* ─────────────── Easing ─────────────── */
   --ease-press:    cubic-bezier(0.23, 1, 0.32, 1);
   --ease-ui:       cubic-bezier(0.23, 1, 0.32, 1);
   --ease-movement: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-reveal:   cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Duration tokens — Emil's table. Press feedback under 160ms; UI under 300ms. */
-  --dur-press:   130ms;  /* button :active, tap feedback */
-  --dur-hover:   180ms;  /* color / opacity hover */
-  --dur-lift:    220ms;  /* hover transform (card lift, icon nudge) */
-  --dur-nav:     240ms;  /* tab indicator, dot grow */
-  --dur-reveal:  700ms;  /* scroll-in fade-up */
-  --dur-image:   500ms;  /* image scale on card hover — slow on purpose */
+  --dur-press:   130ms;
+  --dur-hover:   180ms;
+  --dur-lift:    220ms;
+  --dur-nav:     240ms;
+  --dur-reveal:  700ms;
+  --dur-image:   500ms;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 html,
@@ -146,7 +138,6 @@ body {
   min-height: 100dvh;
 }
 
-/* Skip-to-content link — invisible until focused, accessible essential. */
 .skip-link {
   position: absolute;
   top: var(--space-md);
@@ -157,7 +148,7 @@ body {
   color: var(--accent-fg);
   font-weight: var(--fw-semibold);
   font-size: var(--text-sm);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transform: translateY(-200%);
   transition: transform 200ms var(--ease-ui);
 }
@@ -165,8 +156,6 @@ body {
   transform: translateY(0);
 }
 
-/* Faint, fixed film-grain overlay. Breaks the flat-vector dark feel without
-   reading as decoration. Pointer-events disabled, hidden for reduced motion. */
 .grain-overlay {
   position: fixed;
   inset: 0;
@@ -227,13 +216,8 @@ h1, h2, h3, h4, h5, h6 {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
 /* ─────────────── Type utilities ─────────────── */
+.tnum { font-variant-numeric: tabular-nums; }
 
-/* Numbers should align everywhere they appear, even in body sans. */
-.tnum {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Eyebrow — uppercase mono label. ONE canonical recipe. */
 .eyebrow {
   font-family: var(--font-mono), var(--font-mono-fallback);
   font-size: var(--text-xs);
@@ -243,7 +227,6 @@ h1, h2, h3, h4, h5, h6 {
   text-transform: uppercase;
 }
 
-/* Meta — mono, not uppercase. Used for runtime / view-count strips. */
 .meta {
   font-family: var(--font-mono), var(--font-mono-fallback);
   font-size: var(--text-xs);
@@ -252,7 +235,6 @@ h1, h2, h3, h4, h5, h6 {
   font-variant-numeric: tabular-nums;
 }
 
-/* Body — the canonical paragraph. */
 .prose {
   font-size: var(--text-base);
   line-height: var(--lh-body);
@@ -260,7 +242,6 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--fg-2);
 }
 
-/* Display — hero only. The single place fluid type lives. */
 .display {
   font-family: var(--font-display), var(--font-display-fallback);
   font-size: var(--text-display);
@@ -271,7 +252,6 @@ h1, h2, h3, h4, h5, h6 {
   font-optical-sizing: auto;
 }
 
-/* Heading — rail h2, watch h1 */
 .heading {
   font-family: var(--font-display), var(--font-display-fallback);
   font-size: var(--text-xl);
@@ -280,7 +260,6 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: var(--tr-heading);
 }
 
-/* Subheading — watch sidebar, channel card */
 .subheading {
   font-family: var(--font-display), var(--font-display-fallback);
   font-size: var(--text-lg);
@@ -289,8 +268,6 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: var(--tr-heading);
 }
 
-/* Card title — used in PosterCard + VideoCard. Sans, not display, to avoid
-   serif-on-thumbnail noise. */
 .card-title {
   font-family: var(--font-sans), var(--font-sans-fallback);
   font-size: var(--text-base);

@@ -4,17 +4,25 @@
  * Set YOUTUBE_API_KEY in .env.local to enable live mode.
  * Without a key, the app falls back to the curated mock-data.
  *
- * Quota notes:
- *   - search.list costs 100 units/call → most expensive
- *   - videos.list costs 1 unit/call (batched up to 50 ids)
- *   - channels.list costs 1 unit/call
- *   Daily quota is 10,000 units → ~80 search calls or ~10,000 video lookups.
- *   We aggressively cache (Next.js ISR + in-memory) to stay well under.
+ * Channel-locked fetching:
+ *   Every video returned by getLatestFromChannels() is fetched via the
+ *   channel's uploads playlist — not search. This guarantees only videos
+ *   from the requested channels appear. Each video's channelId is verified
+ *   against the expected channel list before being returned.
+ *
+ * Quota budget (~44 units/day for 21 channels):
+ *   - channels.list:       1 unit/call  × 21 = 21
+ *   - playlistItems.list:  1 unit/call  × 21 = 21
+ *   - videos.list:         1 unit/50ids      ≈ 2
+ *   Free tier: 10,000 units/day → we use 0.4%.
  */
 import type { VideoItem, Channel } from "./types";
 
 const KEY = process.env.YOUTUBE_API_KEY;
 const BASE = "https://www.googleapis.com/youtube/v3";
+
+/** Minimum video duration in seconds. Anything shorter is a Short / clip. */
+const MIN_DURATION_SECONDS = 60;
 
 export function isLiveMode() {
   return Boolean(KEY);
@@ -22,10 +30,6 @@ export function isLiveMode() {
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /* In-memory cache — process-wide, survives across requests in dev + prod.  */
-/*                                                                          */
-/* Next.js's built-in fetch cache (revalidate) covers most cases, but for   */
-/* hot paths (rail data on the home page) we add a second tier so we don't  */
-/* even round-trip Next.js's cache when we just served the same key 30s ago.*/
 /* ──────────────────────────────────────────────────────────────────────── */
 type CacheEntry<T> = { value: T; expires: number };
 const memCache = new Map<string, CacheEntry<unknown>>();
@@ -62,7 +66,15 @@ type YTSearchItem = {
 
 type YTVideoItem = {
   id: string;
-  snippet: YTSearchItem["snippet"];
+  snippet: {
+    title: string;
+    description: string;
+    publishedAt: string;
+    channelId: string;
+    channelTitle: string;
+    thumbnails: Record<string, { url: string }>;
+    tags?: string[];
+  };
   contentDetails: { duration: string };
   statistics: { viewCount: string; likeCount?: string };
 };
@@ -78,6 +90,24 @@ type YTChannelItem = {
   statistics: { subscriberCount?: string; videoCount?: string };
   brandingSettings?: {
     image?: { bannerExternalUrl?: string };
+  };
+};
+
+type YTPlaylistItem = {
+  snippet: {
+    resourceId: { videoId: string };
+    title: string;
+    publishedAt: string;
+    channelId: string;
+    channelTitle: string;
+    thumbnails: Record<string, { url: string }>;
+  };
+};
+
+type YTChannelContentDetails = {
+  id: string;
+  contentDetails: {
+    relatedPlaylists: { uploads: string };
   };
 };
 
@@ -119,60 +149,173 @@ function mapVideo(v: YTVideoItem): VideoItem {
     duration: pretty,
     durationSeconds: seconds,
     viewCount: parseInt(v.statistics.viewCount || "0", 10),
-    likeCount: v.statistics.likeCount ? parseInt(v.statistics.likeCount, 10) : undefined,
+    likeCount: v.statistics.likeCount
+      ? parseInt(v.statistics.likeCount, 10)
+      : undefined,
     thumbnail: bestThumbnail(v.snippet.thumbnails),
     backdrop: bestThumbnail(v.snippet.thumbnails),
     tags: v.snippet.tags?.slice(0, 4),
   };
 }
 
-async function ytFetch<T>(url: string, ttlMs: number = MEM_TTL_MS): Promise<T | undefined> {
+/* ──────────────────────────────────────────────────────────────────────── */
+/* Fetching with retry + cache                                              */
+/* ──────────────────────────────────────────────────────────────────────── */
+const MAX_RETRIES = 2;
+const RETRY_DELAYS_MS = [1000, 2000];
+
+async function ytFetch<T>(
+  url: string,
+  ttlMs: number = MEM_TTL_MS
+): Promise<T | undefined> {
   const cacheKey = url;
   const hit = memGet<T>(cacheKey);
   if (hit) return hit;
 
-  const res = await fetch(url, {
-    next: { revalidate: Math.floor(ttlMs / 1000) },
-  });
-  if (!res.ok) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn(`[youtube] ${res.status} ${res.statusText} for ${url}`);
+  let lastError: Error | undefined;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const res = await fetch(url, {
+        next: { revalidate: Math.floor(ttlMs / 1000) },
+      });
+
+      // Retry on 5xx
+      if (res.status >= 500 && attempt < MAX_RETRIES) {
+        await delay(RETRY_DELAYS_MS[attempt]);
+        continue;
+      }
+
+      if (!res.ok) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            `[youtube] ${res.status} ${res.statusText} for ${url}`
+          );
+        }
+        return undefined;
+      }
+
+      const data = (await res.json()) as T;
+      memSet(cacheKey, data, ttlMs);
+      return data;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt < MAX_RETRIES) {
+        await delay(RETRY_DELAYS_MS[attempt]);
+      }
     }
-    return undefined;
   }
-  const data = (await res.json()) as T;
-  memSet(cacheKey, data, ttlMs);
-  return data;
+
+  if (process.env.NODE_ENV !== "production" && lastError) {
+    console.warn(`[youtube] failed after ${MAX_RETRIES + 1} attempts: ${lastError.message}`);
+  }
+  return undefined;
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/* Channel-locked fetching                                                   */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Get the uploads playlist ID for a channel.
+ * This is the channel's "Uploads" playlist — guaranteed to contain only
+ * videos published by that channel.
+ */
+async function getChannelUploadsPlaylistId(
+  channelId: string
+): Promise<string | undefined> {
+  const url =
+    `${BASE}/channels?key=${KEY}&id=${channelId}` +
+    `&part=contentDetails`;
+  const data = await ytFetch<{ items: YTChannelContentDetails[] }>(
+    url,
+    24 * 60 * 60 * 1000 // cache 24h — playlist IDs don't change
+  );
+  return data?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+}
+
+/**
+ * Get video IDs from a playlist's most recent items.
+ * playlistItems.list costs 1 unit/call (vs 100 for search.list).
+ */
+async function getPlaylistVideoIds(
+  playlistId: string,
+  max: number
+): Promise<string[]> {
+  const url =
+    `${BASE}/playlistItems?key=${KEY}&playlistId=${playlistId}` +
+    `&part=snippet&maxResults=${max}`;
+  const data = await ytFetch<{ items: YTPlaylistItem[] }>(
+    url,
+    60 * 60 * 1000 // 1h cache
+  );
+  return (data?.items ?? []).map((i) => i.snippet.resourceId.videoId);
+}
+
+/**
+ * Safety check: verify that every video's channelId is in the expected set.
+ * This is a belt-and-suspenders guarantee — even if the YouTube API returns
+ * something unexpected, we never show a video from a non-premium channel.
+ */
+function verifyChannelOwnership(
+  videos: VideoItem[],
+  allowedChannelIds: Set<string>
+): VideoItem[] {
+  return videos.filter((v) => allowedChannelIds.has(v.channelId));
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
 /* Public API                                                                */
 /* ──────────────────────────────────────────────────────────────────────── */
 
-/** Get latest videos for a list of channels. Backs the editorial rails. */
+/**
+ * Get latest videos for a list of channels — channel-locked.
+ *
+ * Fetches each channel's uploads playlist, then resolves full video metadata.
+ * Results are filtered (no Shorts), verified (channelId check), and sorted
+ * by viewCount descending.
+ */
 export async function getLatestFromChannels(
   channelIds: string[],
   perChannel = 4
 ): Promise<VideoItem[]> {
-  if (!KEY) return [];
+  if (!KEY || channelIds.length === 0) return [];
 
-  const searchResults = await Promise.all(
+  const allowedSet = new Set(channelIds);
+
+  // Step 1: Get uploads playlist IDs for all channels (1 unit/call, cached 24h)
+  const playlistIds = await Promise.all(
     channelIds.map(async (cid) => {
-      const url =
-        `${BASE}/search?key=${KEY}&channelId=${cid}` +
-        `&part=snippet&order=date&type=video&maxResults=${perChannel}`;
-      const data = await ytFetch<{ items: YTSearchItem[] }>(url, 60 * 60 * 1000);
-      return data?.items ?? [];
+      const pid = await getChannelUploadsPlaylistId(cid);
+      return { channelId: cid, playlistId: pid };
     })
   );
 
-  const ids: string[] = [];
-  for (const arr of searchResults) {
-    for (const item of arr) if (item.id.videoId) ids.push(item.id.videoId);
+  // Step 2: Fetch video IDs from each playlist (1 unit/call)
+  const allVideoIds: string[] = [];
+  for (const { playlistId } of playlistIds) {
+    if (!playlistId) continue;
+    const ids = await getPlaylistVideoIds(playlistId, perChannel + 2); // fetch extra to account for Shorts
+    allVideoIds.push(...ids);
   }
-  if (ids.length === 0) return [];
 
-  return getVideosByIds(ids);
+  if (allVideoIds.length === 0) return [];
+
+  // Step 3: Get full video metadata (1 unit per 50 IDs)
+  const videos = await getVideosByIds(allVideoIds);
+
+  // Step 4: Verify channel ownership — drop any video not from an allowed channel
+  const owned = verifyChannelOwnership(videos, allowedSet);
+
+  // Step 5: Filter out Shorts and sort by viewCount
+  const filtered = owned
+    .filter((v) => (v.durationSeconds ?? 0) >= MIN_DURATION_SECONDS)
+    .sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0));
+
+  return filtered;
 }
 
 export async function getVideoById(id: string): Promise<VideoItem | undefined> {
@@ -201,13 +344,20 @@ export async function getVideosByIds(ids: string[]): Promise<VideoItem[]> {
   return results.flat().map(mapVideo);
 }
 
+/**
+ * Search videos — used only for the user-initiated Search page.
+ * NOTE: This can return videos from any channel (not channel-locked).
+ * The search page is the only place where open-ended discovery is intentional.
+ */
 export async function searchVideos(q: string, max = 24): Promise<VideoItem[]> {
   if (!KEY) return [];
   const url =
     `${BASE}/search?key=${KEY}&q=${encodeURIComponent(q)}` +
     `&part=snippet&type=video&maxResults=${max}&order=relevance`;
   const data = await ytFetch<{ items: YTSearchItem[] }>(url, 10 * 60 * 1000);
-  const ids = (data?.items ?? []).map((i) => i.id.videoId).filter(Boolean) as string[];
+  const ids = (data?.items ?? [])
+    .map((i) => i.id.videoId)
+    .filter(Boolean) as string[];
   if (ids.length === 0) return [];
   return getVideosByIds(ids);
 }
@@ -230,16 +380,32 @@ export async function getChannel(id: string): Promise<Channel | undefined> {
   };
 }
 
-/** Latest videos for a single channel — used on the channel page. */
-export async function getChannelVideos(channelId: string, max = 24): Promise<VideoItem[]> {
+/**
+ * Latest videos for a single channel — used on the channel page.
+ * Uses the channel-locked playlist approach.
+ */
+export async function getChannelVideos(
+  channelId: string,
+  max = 24
+): Promise<VideoItem[]> {
   if (!KEY) return [];
-  const url =
-    `${BASE}/search?key=${KEY}&channelId=${channelId}` +
-    `&part=snippet&order=date&type=video&maxResults=${max}`;
-  const data = await ytFetch<{ items: YTSearchItem[] }>(url, 60 * 60 * 1000);
-  const ids = (data?.items ?? []).map((i) => i.id.videoId).filter(Boolean) as string[];
+
+  const playlistId = await getChannelUploadsPlaylistId(channelId);
+  if (!playlistId) return [];
+
+  const ids = await getPlaylistVideoIds(playlistId, max + 4); // extra for Shorts filtering
   if (ids.length === 0) return [];
-  return getVideosByIds(ids);
+
+  const videos = await getVideosByIds(ids);
+
+  // Channel page shows that channel's own videos, so verify + filter Shorts
+  return videos
+    .filter(
+      (v) =>
+        v.channelId === channelId &&
+        (v.durationSeconds ?? 0) >= MIN_DURATION_SECONDS
+    )
+    .slice(0, max);
 }
 
 export type { Channel };

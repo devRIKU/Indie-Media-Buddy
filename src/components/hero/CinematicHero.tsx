@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import anime from "animejs";
 import type { FeaturedHeroItem } from "@/lib/types";
 import { formatViews } from "@/lib/format";
 import ProgressiveBlur from "@/components/ui/ProgressiveBlur";
@@ -10,16 +11,14 @@ import Eyebrow from "@/components/ui/Eyebrow";
 /**
  * CinematicHero — Editorial Split layout (Vanguard 3.B.3).
  *
- * Left column: massive display type, eyebrow tag, kicker, meta, prose, CTAs.
- * Right column: a double-bezel framed preview of the active item — the still
- * sits like a glass plate in an aluminum tray, with a hairline outer shell
- * and an inner highlight (Section 4.A).
- *
- * Background: the active still, cross-faded, *also* fills the left side at
- * low opacity behind the scrim so the page reads cinematic rather than
- * boxed-off.
- *
- * Carousel auto-rotates every 9s, pauses on hover / focus / reduced motion.
+ * v2 minimal redesign:
+ *   • Eyebrow / tagline / title / meta / prose / CTAs reveal in sequence.
+ *   • The display headline uses Anime.js for a per-word, blur+translate
+ *     stagger on first paint and on every active-slide change. The rest of
+ *     the column uses CSS transitions keyed off a `data-state` attribute.
+ *   • Carousel auto-rotates every 9s, pauses on hover / focus / reduced motion.
+ *   • On the left column, the `md:pl-[68px]` from v1 is gone — the sidebar
+ *     is removed in the v2 minimal redesign.
  */
 export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) {
   const [active, setActive] = useState(0);
@@ -27,7 +26,10 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
 
   const [paused, setPaused] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const stackRef = useRef<HTMLDivElement>(null);
 
+  // Carousel autoplay
   useEffect(() => {
     if (typeof window === "undefined") return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -35,6 +37,54 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
     const t = setInterval(() => setActive((i) => (i + 1) % items.length), 9000);
     return () => clearInterval(t);
   }, [paused, items.length]);
+
+  // Anime.js reveal — fires on mount AND whenever the active slide changes.
+  // We use a `data-reveal` attribute as the trigger selector so the same
+  // targets animate twice (mount: stagger 60ms / slide change: 40ms).
+  useEffect(() => {
+    const el = stackRef.current;
+    const title = titleRef.current;
+    if (!el || !title) return;
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      el.setAttribute("data-revealed", "1");
+      return;
+    }
+
+    el.setAttribute("data-revealed", "0");
+
+    // Initial mount uses a slightly longer stagger; subsequent slide changes
+    // use a snappier one so the user feels a deliberate re-entry, not a lag.
+    const isFirst = active === 0;
+    const delayStep = isFirst ? 70 : 38;
+
+    // Word-level stagger for the display headline. We slice on spaces so we
+    // don't break mid-word on narrow viewports.
+    const words = Array.from(title.querySelectorAll<HTMLSpanElement>("[data-word]"));
+    anime({
+      targets: words,
+      opacity: [0, 1],
+      translateY: [18, 0],
+      filter: ["blur(6px)", "blur(0px)"],
+      delay: anime.stagger(delayStep),
+      duration: 850,
+      easing: "cubicBezier(0.22, 1, 0.36, 1)",
+    });
+
+    // Rest of the column: opacity + translate + blur in sequence.
+    const siblings = el.querySelectorAll<HTMLElement>("[data-reveal]:not([data-word])");
+    anime({
+      targets: siblings,
+      opacity: [0, 1],
+      translateY: [14, 0],
+      filter: ["blur(6px)", "blur(0px)"],
+      delay: anime.stagger(delayStep, { start: 80 }),
+      duration: 750,
+      easing: "cubicBezier(0.22, 1, 0.36, 1)",
+      complete: () => el.setAttribute("data-revealed", "1"),
+    });
+  }, [active]);
 
   if (!current) return null;
 
@@ -49,9 +99,8 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
       onBlur={() => setPaused(false)}
     >
       {/* ── Backdrop layer ───────────────────────────────────────────────
-          Cross-fading stack of stills, sits *behind* the left scrim so the
-          page never feels like a flat card on cream. The active still also
-          drives the right-side double-bezel preview. */}
+          Cross-fading stack of stills sits behind the left scrim so the
+          page never feels like a flat card on cream. */}
       {items.map((item, i) => (
         <div
           key={item.id}
@@ -91,39 +140,57 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
         }}
       />
 
-      {/* Progressive blur band along the bottom so the hero dissolves into rails below */}
       <ProgressiveBlur position="bottom" height={240} intensity="strong" className="z-[5]" />
 
-      {/* ── Content grid ────────────────────────────────────────────────
-          Below md: full-width column (mobile collapse per Vanguard rules).
-          md+: 7/12 left typography, 5/12 right poster preview. */}
+      {/* ── Content grid ──────────────────────────────────────────────── */}
       <div
-        className="relative z-10 grid h-full min-h-[100dvh] grid-cols-1 items-end gap-x-12 px-4 pb-24 pt-32 sm:px-8 md:grid-cols-12 md:items-center md:gap-x-16 md:pl-[calc(68px+48px)] md:pr-12 md:pt-20"
+        ref={stackRef}
+        data-revealed="0"
+        className="relative z-10 grid h-full min-h-[100dvh] grid-cols-1 items-end gap-x-12 px-4 pb-24 pt-32 sm:px-8 md:grid-cols-12 md:items-center md:gap-x-16 md:px-12 md:pt-20"
       >
         {/* Left column — typography */}
         <div key={current.id} className="md:col-span-7 lg:col-span-7">
-          <div
-            className="opacity-0 translate-y-4 blur-md animate-[heroin_900ms_cubic-bezier(0.22,1,0.36,1)_forwards]"
-          >
+          <div data-reveal style={{ opacity: 0 }}>
             <Eyebrow variant="accent" className="mb-6">
               Editor&apos;s pick · {current.channelTitle}
             </Eyebrow>
           </div>
 
           <p
-            className="mb-3 font-display text-lg font-medium italic leading-snug text-fg-2 opacity-0 translate-y-4 blur-md animate-[heroin_900ms_cubic-bezier(0.22,1,0.36,1)_60ms_forwards]"
+            data-reveal
+            style={{ opacity: 0 }}
+            className="mb-3 font-display text-lg font-medium italic leading-snug text-fg-2"
           >
             {current.tagline}
           </p>
 
+          {/*
+            Display headline — words are pre-split so Anime.js can stagger them
+            per-word. The parent span provides opacity so the line stays
+            readable if JS is delayed.
+          */}
           <h1
-            className="display max-w-display text-fg drop-shadow-[0_2px_24px_rgba(0,0,0,0.55)] opacity-0 translate-y-4 blur-md animate-[heroin_1000ms_cubic-bezier(0.22,1,0.36,1)_120ms_forwards]"
+            ref={titleRef}
+            className="display max-w-display text-fg drop-shadow-[0_2px_24px_rgba(0,0,0,0.55)]"
+            aria-label={current.title}
           >
-            {current.title}
+            {(current.title ?? "").split(" ").map((word, i) => (
+              <span
+                key={`${current.id}-${i}`}
+                data-word
+                className="inline-block opacity-0"
+                style={{ willChange: "transform, opacity, filter" }}
+              >
+                {word}
+                {i < (current.title ?? "").split(" ").length - 1 ? "\u00A0" : ""}
+              </span>
+            ))}
           </h1>
 
           <div
-            className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-fg-2 meta opacity-0 translate-y-4 animate-[heroin_900ms_cubic-bezier(0.22,1,0.36,1)_220ms_forwards]"
+            data-reveal
+            style={{ opacity: 0 }}
+            className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-fg-2 meta"
           >
             <span>{new Date(current.publishedAt).getFullYear()}</span>
             <span className="text-faint">·</span>
@@ -139,13 +206,17 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
           </div>
 
           <p
-            className="prose mt-6 line-clamp-3 text-fg-2 opacity-0 translate-y-4 animate-[heroin_900ms_cubic-bezier(0.22,1,0.36,1)_300ms_forwards]"
+            data-reveal
+            style={{ opacity: 0 }}
+            className="prose mt-6 line-clamp-3 text-fg-2"
           >
             {current.description}
           </p>
 
           <div
-            className="mt-9 flex flex-wrap items-center gap-3 opacity-0 translate-y-4 animate-[heroin_900ms_cubic-bezier(0.22,1,0.36,1)_380ms_forwards]"
+            data-reveal
+            style={{ opacity: 0 }}
+            className="mt-9 flex flex-wrap items-center gap-3"
           >
             <MagneticButton
               href={`/watch/${current.id}`}
@@ -184,15 +255,11 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
           </div>
         </div>
 
-        {/* Right column — double-bezel preview ─────────────────────────
-            Outer shell (machined-aluminum tray): hairline ring, faint bg,
-            small padding, larger radius. Inner core (glass plate): the still,
-            its own radius mathematically smaller (calc-based concentric).
-            Hidden below md — on phones the backdrop *is* the preview. */}
+        {/* Right column — double-bezel preview */}
         <div className="relative hidden md:col-span-5 md:block">
           <DoubleBezelPreview items={items} active={active} />
 
-          {/* Indicator strip — small dots tied to active state */}
+          {/* Indicator strip */}
           <div className="mt-6 flex items-center justify-center gap-2.5">
             {items.map((item, i) => (
               <button
@@ -201,9 +268,6 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
                 aria-label={`Featured ${i + 1}: ${item.title}`}
                 aria-current={i === active ? "true" : undefined}
                 className={
-                  // Width grow uses ease-press (strong out-curve) at 240ms;
-                  // background-color is faster (180ms) so it doesn't fight
-                  // the width animation visually.
                   "h-1.5 rounded-full transition-[width,background-color] duration-nav ease-press " +
                   (i === active
                     ? "w-8 bg-accent"
@@ -214,27 +278,10 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes heroin {
-          from {
-            opacity: 0;
-            transform: translateY(16px);
-            filter: blur(6px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-            filter: blur(0);
-          }
-        }
-      `}</style>
     </section>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────── */
-/* Double-Bezel preview — outer shell + inner core, concentric radii        */
 /* ─────────────────────────────────────────────────────────────────────── */
 function DoubleBezelPreview({
   items,
@@ -244,7 +291,6 @@ function DoubleBezelPreview({
   active: number;
 }) {
   return (
-    // OUTER SHELL — machined-aluminum tray
     <div
       className="relative aspect-[3/4] w-full overflow-hidden p-2 ring-1 ring-fg/10"
       style={{
@@ -255,7 +301,6 @@ function DoubleBezelPreview({
           "inset 0 1px 0 oklch(from var(--fg) l c h / 0.06), inset 0 -1px 0 oklch(from var(--bg) l c h / 0.5)",
       }}
     >
-      {/* INNER CORE — the glass plate. Concentric radius via calc. */}
       <div
         className="relative h-full w-full overflow-hidden bg-black"
         style={{
@@ -275,7 +320,6 @@ function DoubleBezelPreview({
             style={{ opacity: i === active ? 1 : 0 }}
           />
         ))}
-        {/* Soft bottom shadow inside the plate */}
         <div
           aria-hidden="true"
           className="absolute inset-x-0 bottom-0 h-1/3"

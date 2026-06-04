@@ -22,17 +22,69 @@ import {
 } from "./mock-data";
 import type { Channel, FeaturedHeroItem, VideoItem } from "./types";
 
+/* ──────────────────────────────────────────────────────────────────────── */
+/* Hero tint palette — cycled through when building live hero items.         */
+/* ──────────────────────────────────────────────────────────────────────── */
+const HERO_TINTS = [
+  "#ec4899", // pink
+  "#ef4444", // red
+  "#8b5cf6", // violet
+  "#3b82f6", // blue
+  "#10b981", // emerald
+  "#f59e0b", // amber
+  "#06b6d4", // cyan
+  "#f97316", // orange
+];
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/* Channel-locked hero: spotlight channels from the first rail.              */
+/* ──────────────────────────────────────────────────────────────────────── */
+const SPOTLIGHT_CHANNELS = (() => {
+  const spotlight = RAILS.find((r) => r.slug === "spotlight");
+  return spotlight?.channelIds ?? [];
+})();
+
+function buildHeroTagline(title: string, channelTitle: string): string {
+  // Use a short, punchy tagline derived from the channel
+  return channelTitle;
+}
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/* Public API                                                                */
+/* ──────────────────────────────────────────────────────────────────────── */
+
 export async function getRailVideos(slug: string): Promise<VideoItem[]> {
   const rail = RAILS.find((r) => r.slug === slug);
   if (!rail) return [];
+
   if (isLiveMode() && rail.channelIds && rail.channelIds.length > 0) {
     const vids = await getLatestFromChannels(rail.channelIds, 4);
     if (vids.length > 0) return vids;
+    console.warn(`[data] live mode fell back to mock for rail "${slug}"`);
   }
+
   return MOCK_VIDEOS[slug] ?? [];
 }
 
+/**
+ * Get hero items. In live mode, fetches top videos from the spotlight channels.
+ * Falls back to curated mock hero when live mode is unavailable or returns
+ * insufficient results.
+ */
 export async function getHero(): Promise<FeaturedHeroItem[]> {
+  if (isLiveMode() && SPOTLIGHT_CHANNELS.length > 0) {
+    const vids = await getLatestFromChannels(SPOTLIGHT_CHANNELS, 6);
+    if (vids.length >= 4) {
+      // Take the top 4 by view count (getLatestFromChannels already sorts)
+      return vids.slice(0, 4).map((v, i) => ({
+        ...v,
+        tagline: buildHeroTagline(v.title, v.channelTitle),
+        tint: HERO_TINTS[i % HERO_TINTS.length],
+      }));
+    }
+    console.warn("[data] live hero fetch returned insufficient results, using mock");
+  }
+
   return MOCK_HERO;
 }
 
@@ -40,14 +92,22 @@ export async function getVideo(id: string): Promise<VideoItem | undefined> {
   if (isLiveMode()) {
     const live = await getVideoById(id);
     if (live) return live;
+    console.warn(`[data] live video fetch failed for "${id}", trying mock`);
   }
   return mockGetVideo(id);
 }
 
-export async function getRelated(channelId: string, excludeId: string): Promise<VideoItem[]> {
+export async function getRelated(
+  channelId: string,
+  excludeId: string
+): Promise<VideoItem[]> {
   if (isLiveMode()) {
     const live = await getLatestFromChannels([channelId], 8);
-    if (live.length > 0) return live.filter((v) => v.id !== excludeId).slice(0, 6);
+    if (live.length > 0)
+      return live.filter((v) => v.id !== excludeId).slice(0, 6);
+    console.warn(
+      `[data] live related fetch failed for channel "${channelId}", using mock`
+    );
   }
   return mockRelated(channelId, excludeId);
 }
@@ -57,6 +117,7 @@ export async function searchAll(q: string): Promise<VideoItem[]> {
   if (isLiveMode()) {
     const live = await ytSearch(q, 24);
     if (live.length > 0) return live;
+    console.warn(`[data] live search returned no results for "${q}", using mock`);
   }
   // Mock mode: simple substring match against the local index
   const needle = q.toLowerCase();
@@ -75,18 +136,20 @@ export async function getChannel(id: string): Promise<Channel | undefined> {
   if (isLiveMode()) {
     const live = await ytChannel(id);
     if (live) return live;
+    console.warn(`[data] live channel fetch failed for "${id}", using mock`);
   }
   // Mock: synthesize from catalog
   const match = Object.values(PREMIUM_CHANNELS).find((c) => c.id === id);
-  return match
-    ? { id: match.id, title: match.title }
-    : undefined;
+  return match ? { id: match.id, title: match.title } : undefined;
 }
 
 export async function getChannelVideos(id: string): Promise<VideoItem[]> {
   if (isLiveMode()) {
     const live = await ytChannelVideos(id, 24);
     if (live.length > 0) return live;
+    console.warn(
+      `[data] live channel videos fetch failed for "${id}", using mock`
+    );
   }
   return Object.values(MOCK_VIDEOS)
     .flat()
@@ -133,24 +196,31 @@ const CATEGORY_TO_CHANNELS: Record<string, string[]> = {
     PREMIUM_CHANNELS.archdaily.id,
     PREMIUM_CHANNELS.bonappetit.id,
   ],
-  nature: [
-    PREMIUM_CHANNELS.natgeo.id,
-    PREMIUM_CHANNELS.kurzgesagt.id,
-  ],
-  art: [
-    PREMIUM_CHANNELS.greatart.id,
-    PREMIUM_CHANNELS.nerdwriter.id,
-  ],
+  nature: [PREMIUM_CHANNELS.natgeo.id, PREMIUM_CHANNELS.kurzgesagt.id],
+  art: [PREMIUM_CHANNELS.greatart.id, PREMIUM_CHANNELS.nerdwriter.id],
 };
 
-export const CATEGORY_LABELS: Record<string, { title: string; subtitle: string }> = {
-  science: { title: "Mind-bending Science", subtitle: "Veritasium · Kurzgesagt · Vsauce · Melodysheep · Branch Ed · 3Blue1Brown" },
-  essays:  { title: "Video Essays",         subtitle: "Nerdwriter · Polyphonic · Johnny Harris" },
-  shows:   { title: "Shows",                subtitle: "Vox · GLITCH · Mark Rober · MKBHD · Bon Appétit" },
-  movies:  { title: "Films",                subtitle: "Long-form documentary and essay" },
-  design:  { title: "Design & Tech",        subtitle: "MKBHD · Mark Rober · ArchDaily" },
-  nature:  { title: "Nature",               subtitle: "National Geographic · Kurzgesagt" },
-  art:     { title: "Art, Explained",       subtitle: "One painting at a time" },
+export const CATEGORY_LABELS: Record<
+  string,
+  { title: string; subtitle: string }
+> = {
+  science: {
+    title: "Mind-bending Science",
+    subtitle:
+      "Veritasium · Kurzgesagt · Vsauce · Melodysheep · Branch Ed · 3Blue1Brown",
+  },
+  essays: {
+    title: "Video Essays",
+    subtitle: "Nerdwriter · Polyphonic · Johnny Harris",
+  },
+  shows: {
+    title: "Shows",
+    subtitle: "Vox · GLITCH · Mark Rober · MKBHD · Bon Appétit",
+  },
+  movies: { title: "Films", subtitle: "Long-form documentary and essay" },
+  design: { title: "Design & Tech", subtitle: "MKBHD · Mark Rober · ArchDaily" },
+  nature: { title: "Nature", subtitle: "National Geographic · Kurzgesagt" },
+  art: { title: "Art, Explained", subtitle: "One painting at a time" },
 };
 
 export async function getCategoryVideos(slug: string): Promise<VideoItem[]> {
@@ -159,6 +229,9 @@ export async function getCategoryVideos(slug: string): Promise<VideoItem[]> {
   if (isLiveMode()) {
     const live = await getLatestFromChannels(channels, 8);
     if (live.length > 0) return live;
+    console.warn(
+      `[data] live category fetch failed for "${slug}", using mock`
+    );
   }
   // Mock: pull every video whose channelId is in this category's channel list
   const channelSet = new Set(channels);

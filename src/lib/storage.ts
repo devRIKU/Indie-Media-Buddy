@@ -171,3 +171,25 @@ export function useVideoProgress(videoId: string): number | undefined {
   }, [videoId]);
   return pct;
 }
+
+export function getProgressMap(): ProgressMap {
+  return readProgress();
+}
+
+/** Subscribe to the full Progress Map for recommendation algorithms. */
+export function useProgressMap() {
+  const [map, setMap] = useState<ProgressMap>({});
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setMap(readProgress());
+    setReady(true);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === PROGRESS_KEY) setMap(readProgress());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  return { map, ready };
+}

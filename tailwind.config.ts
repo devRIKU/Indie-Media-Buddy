@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -12,6 +13,7 @@ const config: Config = {
         bg: "var(--bg)",
         surface: "var(--surface)",
         "surface-2": "var(--surface-2)",
+        "surface-3": "var(--surface-3)",
         fg: "var(--fg)",
         "fg-2": "var(--fg-2)",
         muted: "var(--muted)",
@@ -29,8 +31,6 @@ const config: Config = {
         sans: ["var(--font-sans)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "Menlo", "monospace"],
       },
-      // Type-scale tokens — the ONLY sizes anyone should use.
-      // px-named sizes like text-[15px] are not in this scale.
       fontSize: {
         xs:      ["var(--text-xs)",   { lineHeight: "var(--lh-meta)" }],
         sm:      ["var(--text-sm)",   { lineHeight: "var(--lh-body)" }],
@@ -61,6 +61,15 @@ const config: Config = {
         body:    "var(--tr-body)",
         eyebrow: "var(--tr-eyebrow)",
       },
+      borderRadius: {
+        none: "0",
+        sm:   "var(--radius-sm)",
+        md:   "var(--radius-md)",
+        lg:   "var(--radius-lg)",
+        xl:   "var(--radius-xl)",
+        "2xl":"var(--radius-2xl)",
+        full: "9999px",
+      },
       maxWidth: {
         body:    "var(--measure-body)",
         heading: "var(--measure-heading)",
@@ -71,13 +80,11 @@ const config: Config = {
         card:       "var(--shadow-card)",
         "card-hover": "var(--shadow-card-hover)",
         player:     "var(--shadow-player)",
+        inner:      "inset 0 1px 1px rgba(255,255,255,0.06)",
       },
       borderColor: {
         DEFAULT: "var(--border)",
       },
-      // Setting DEFAULT here means bare `transition-colors` / `transition-opacity`
-      // (no explicit duration / timing) pick up our ui token automatically.
-      // Class-level overrides like `duration-press` still win.
       transitionTimingFunction: {
         DEFAULT:  "var(--ease-ui)",
         press:    "var(--ease-press)",

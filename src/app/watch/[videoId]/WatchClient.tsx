@@ -10,6 +10,15 @@ import { useMyList } from "@/lib/storage";
 import Reveal from "@/components/ui/Reveal";
 import Eyebrow from "@/components/ui/Eyebrow";
 
+/**
+ * WatchClient — single-film view.
+ *
+ *   • One radius scale: lg (cards), xl (player frame), full (pills).
+ *   • Inner image wells use --bg (warm dark), never pure black.
+ *   • Local ActionButton / PillLink replace the previous HeroUI Button.
+ *   • The channel card's initial avatar sits inside an amber chip.
+ *   • All action CTAs share the same ghost-pill + active-amber pattern.
+ */
 export default function WatchClient({
   video,
   related,
@@ -24,7 +33,6 @@ export default function WatchClient({
 
   return (
     <>
-      {/* Ambient bloom backdrop */}
       <div className="pointer-events-none fixed inset-0 -z-10">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -46,22 +54,20 @@ export default function WatchClient({
 
       <section className="px-4 pb-24 pt-32 sm:px-8">
         <div className="mx-auto max-w-[1240px]">
-          {/* ── Player frame — double-bezel: outer shell + inner glass plate ── */}
           <Reveal delay={0} y={32} blur={8}>
             <div
-              className="relative overflow-hidden p-2 ring-1 ring-fg/10 shadow-player"
+              className="relative overflow-hidden rounded-xl p-2 ring-1 ring-fg/10 shadow-player"
               style={{
-                borderRadius: "2rem",
                 background:
-                  "linear-gradient(160deg, oklch(from var(--surface) calc(l + 0.03) c h / 0.7), oklch(from var(--bg) l c h / 0.5))",
+                  "linear-gradient(160deg, var(--surface-2) 0%, var(--bg) 100%)",
               }}
             >
               <div
-                className="relative aspect-video w-full overflow-hidden bg-black"
+                className="relative aspect-video w-full overflow-hidden rounded-lg"
                 style={{
-                  borderRadius: "calc(2rem - 0.5rem)",
+                  background: "var(--bg)",
                   boxShadow:
-                    "inset 0 1px 1px rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.04)",
+                    "inset 0 1px 1px rgba(255,255,255,0.06)",
                 }}
               >
                 {playing ? (
@@ -73,9 +79,7 @@ export default function WatchClient({
             </div>
           </Reveal>
 
-          {/* ── Below player ── */}
           <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_380px]">
-            {/* Main column */}
             <div>
               <Reveal delay={80}>
                 <div className="flex items-start justify-between gap-6 mb-8 flex-wrap">
@@ -99,58 +103,54 @@ export default function WatchClient({
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <PillButton
+                    <ActionButton
                       active={liked}
                       onClick={() => setLiked((l) => !l)}
+                      activeLabel="Liked"
+                      inactiveLabel="Like"
                       icon={
                         <svg viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
                           <path d="M7 14V5a2 2 0 0 1 2-2h2l3 7v4a2 2 0 0 1-2 2H8a1 1 0 0 1-1-1z" />
                           <path d="M3 10v8a2 2 0 0 0 2 2h2" />
                         </svg>
                       }
-                    >
-                      Like
-                    </PillButton>
-                    <PillButton
+                    />
+                    <ActionButton
                       active={saved}
                       onClick={() => toggle(video.id)}
+                      activeLabel="Saved"
+                      inactiveLabel="Save"
                       icon={
                         <svg viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
                           <path d="M5 5h14v16l-7-4-7 4z" />
                         </svg>
                       }
-                    >
-                      {saved ? "Saved" : "Save"}
-                    </PillButton>
-                    <a
+                    />
+                    <PillLink
                       href={`https://www.youtube.com/watch?v=${video.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2 text-[13px] font-medium tracking-button text-fg-2 ring-1 ring-border transition-colors duration-hover ease-ui hover:text-fg active:scale-[0.98] active:duration-press"
+                      icon={
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                          <path d="M14 4h6v6M20 4l-9 9M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6" />
+                        </svg>
+                      }
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                        <path d="M14 4h6v6M20 4l-9 9M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6" />
-                      </svg>
                       YouTube
-                    </a>
+                    </PillLink>
                   </div>
                 </div>
               </Reveal>
 
-              {/* Channel card — double-bezel */}
               <Reveal delay={160}>
                 <div
-                  className="relative p-1.5 ring-1 ring-fg/8"
+                  className="relative rounded-lg p-1.5 ring-1 ring-fg/8"
                   style={{
-                    borderRadius: "1.25rem",
                     background:
-                      "linear-gradient(160deg, oklch(from var(--surface) calc(l + 0.02) c h / 0.7), oklch(from var(--bg) l c h / 0.5))",
+                      "linear-gradient(160deg, var(--surface-2) 0%, var(--bg) 100%)",
                   }}
                 >
                   <div
-                    className="flex items-center gap-4 bg-surface/60 p-4"
+                    className="flex items-center gap-4 rounded-md bg-surface/60 p-4"
                     style={{
-                      borderRadius: "calc(1.25rem - 0.375rem)",
                       boxShadow:
                         "inset 0 1px 1px rgba(255,255,255,0.06)",
                     }}
@@ -158,8 +158,7 @@ export default function WatchClient({
                     <Link
                       href={`/channel/${video.channelId}`}
                       aria-label={`${video.channelTitle} creator page`}
-                      className="grid h-14 w-14 shrink-0 place-items-center bg-accent font-display text-xl font-semibold text-accent-fg transition-transform duration-lift ease-ui hover:scale-[1.05] active:scale-100 active:duration-press active:ease-press"
-                      style={{ borderRadius: "32%" }}
+                      className="grid h-14 w-14 shrink-0 place-items-center bg-accent font-display text-xl font-semibold text-accent-fg transition-transform duration-lift ease-ui hover:scale-[1.05] active:scale-100 active:duration-press active:ease-press rounded-lg"
                     >
                       {video.channelTitle.charAt(0)}
                     </Link>
@@ -175,15 +174,12 @@ export default function WatchClient({
                       </p>
                     </div>
                     <button
-                      className={[
-                        "group/follow relative inline-flex items-center gap-2 rounded-full bg-fg pl-5 pr-1.5 py-1.5 text-[13px] font-semibold tracking-button text-bg",
-                        "transition-[transform,background-color] duration-hover ease-ui",
-                        "hover:bg-fg-2",
-                        "active:scale-[0.98] active:duration-press active:ease-press",
-                      ].join(" ")}
+                      type="button"
+                      title="Follow this channel"
+                      className="group inline-flex h-9 items-center gap-2 rounded-full bg-fg px-4 font-semibold text-bg transition-transform duration-lift ease-ui hover:scale-[1.03] active:scale-100 active:duration-press active:ease-press"
                     >
-                      Follow
-                      <span className="grid h-7 w-7 place-items-center rounded-full bg-bg/10 transition-transform duration-lift ease-ui group-hover/follow:translate-x-0.5 group-hover/follow:-translate-y-px">
+                      <span>Follow</span>
+                      <span className="grid h-7 w-7 place-items-center rounded-full bg-bg/10 transition-transform duration-lift ease-ui group-hover:translate-x-0.5 group-hover:-translate-y-px">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-3 w-3">
                           <path d="M12 5v14M5 12h14" />
                         </svg>
@@ -193,20 +189,17 @@ export default function WatchClient({
                 </div>
               </Reveal>
 
-              {/* About this film */}
               <Reveal delay={240}>
                 <div
-                  className="mt-6 p-1.5 ring-1 ring-fg/8"
+                  className="mt-6 rounded-lg p-1.5 ring-1 ring-fg/8"
                   style={{
-                    borderRadius: "1.25rem",
                     background:
-                      "linear-gradient(160deg, oklch(from var(--surface) calc(l + 0.02) c h / 0.7), oklch(from var(--bg) l c h / 0.5))",
+                      "linear-gradient(160deg, var(--surface-2) 0%, var(--bg) 100%)",
                   }}
                 >
                   <div
-                    className="bg-surface/60 p-7"
+                    className="rounded-md bg-surface/60 p-7"
                     style={{
-                      borderRadius: "calc(1.25rem - 0.375rem)",
                       boxShadow:
                         "inset 0 1px 1px rgba(255,255,255,0.06)",
                     }}
@@ -220,7 +213,6 @@ export default function WatchClient({
               </Reveal>
             </div>
 
-            {/* More to watch sidebar */}
             <aside>
               <Reveal delay={320}>
                 <h2 className="eyebrow mb-5 text-muted">More to watch</h2>
@@ -232,17 +224,16 @@ export default function WatchClient({
                         className="group grid grid-cols-[168px_1fr] gap-3 transition-transform duration-lift ease-ui hover:-translate-y-0.5 active:translate-y-0 active:duration-press active:ease-press"
                       >
                         <div
-                          className="relative overflow-hidden p-1 ring-1 ring-fg/8"
+                          className="relative overflow-hidden rounded-md ring-1 ring-fg/8"
                           style={{
-                            borderRadius: "0.85rem",
                             background:
-                              "linear-gradient(160deg, oklch(from var(--surface) calc(l + 0.02) c h / 0.7), oklch(from var(--bg) l c h / 0.5))",
+                              "linear-gradient(160deg, var(--surface-2) 0%, var(--bg) 100%)",
                           }}
                         >
                           <div
-                            className="relative aspect-video w-full overflow-hidden bg-black"
+                            className="relative aspect-video w-full overflow-hidden rounded-sm"
                             style={{
-                              borderRadius: "calc(0.85rem - 0.25rem)",
+                              background: "var(--bg)",
                               boxShadow:
                                 "inset 0 1px 1px rgba(255,255,255,0.06)",
                             }}
@@ -255,7 +246,7 @@ export default function WatchClient({
                               className="absolute inset-0 h-full w-full object-cover transition-transform duration-image ease-reveal group-hover:scale-[1.05]"
                             />
                             {v.duration && (
-                              <span className="meta absolute bottom-1.5 right-1.5 rounded-full border border-fg/15 bg-bg/70 px-2 py-0.5 text-[10px] text-fg backdrop-blur-md">
+                              <span className="meta absolute bottom-1.5 right-1.5 rounded-full border border-fg/10 bg-bg/70 px-2 py-0.5 text-[10px] text-fg backdrop-blur-md">
                                 {v.duration}
                               </span>
                             )}
@@ -283,35 +274,58 @@ export default function WatchClient({
 }
 
 /* ─────────────────────────────────────────────────────────────────────── */
-/* Local: pill button used in the action row                                */
+/* Local primitives — replace the previous HeroUI Button + Tooltip duo     */
 /* ─────────────────────────────────────────────────────────────────────── */
-function PillButton({
+
+function ActionButton({
   active,
   onClick,
+  activeLabel,
+  inactiveLabel,
   icon,
-  children,
 }: {
   active: boolean;
   onClick: () => void;
+  activeLabel: string;
+  inactiveLabel: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={
+        "inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-medium transition-[transform,background-color,color,box-shadow] duration-hover ease-ui active:scale-95 active:duration-press active:ease-press " +
+        (active
+          ? "bg-accent-soft text-accent ring-1 ring-accent/40"
+          : "bg-surface text-fg-2 ring-1 ring-border hover:bg-surface-2 hover:text-fg")
+      }
+    >
+      {icon}
+      <span>{active ? activeLabel : inactiveLabel}</span>
+    </button>
+  );
+}
+
+function PillLink({
+  href,
+  icon,
+  children,
+}: {
+  href: string;
   icon: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <button
-      onClick={onClick}
-      aria-pressed={active}
-      className={
-        // Color/ring at hover speed; transform at press speed.
-        "inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium tracking-button " +
-        "transition-[transform,background-color,color,box-shadow] duration-hover ease-ui " +
-        "active:scale-[0.97] active:duration-press active:ease-press " +
-        (active
-          ? "bg-accent-soft text-accent ring-1 ring-accent/40"
-          : "bg-surface text-fg-2 ring-1 ring-border hover:text-fg hover:ring-border-2")
-      }
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex h-9 items-center gap-2 rounded-full bg-surface px-4 text-sm font-medium text-fg-2 ring-1 ring-border transition-[transform,background-color,color] duration-hover ease-ui hover:bg-surface-2 hover:text-fg active:scale-95 active:duration-press active:ease-press"
     >
       {icon}
-      {children}
-    </button>
+      <span>{children}</span>
+    </a>
   );
 }

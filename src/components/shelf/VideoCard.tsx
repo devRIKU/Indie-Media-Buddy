@@ -4,6 +4,19 @@ import Link from "next/link";
 import type { VideoItem } from "@/lib/types";
 import { formatViews, formatDate } from "@/lib/format";
 
+/**
+ * VideoCard — 16:9 horizontal card.
+ *
+ * v3 minimal redesign — bounding-box contract:
+ *   • One radius (rounded-lg = 1.25rem) for the outer shell.
+ *   • Inner image well uses --bg (warm dark) instead of pure black.
+ *   • No more stacked shadows on the outer shell.
+ *
+ * Motion:
+ *   • Card lifts -translate-y-0.5 on hover, 0 on press.
+ *   • Image scales 500ms ease-reveal on hover.
+ *   • Title turns accent on hover — subtle kinetic anchor.
+ */
 export default function VideoCard({
   video,
   progress,
@@ -24,26 +37,14 @@ export default function VideoCard({
     >
       {/* OUTER SHELL */}
       <div
-        className={[
-          "relative aspect-video overflow-hidden p-1.5 ring-1 ring-fg/8 shadow-card",
-          "transition-[box-shadow,ring-color] duration-lift ease-ui",
-          "group-hover:shadow-card-hover group-hover:ring-fg/15",
-        ].join(" ")}
+        className="relative aspect-video overflow-hidden rounded-lg ring-1 ring-fg/8 transition-[box-shadow,ring-color] duration-lift ease-ui group-hover:ring-fg/15"
         style={{
-          borderRadius: "1.25rem",
           background:
-            "linear-gradient(160deg, oklch(from var(--surface) calc(l + 0.02) c h / 0.7), oklch(from var(--bg) l c h / 0.5))",
+            "linear-gradient(160deg, var(--surface-2) 0%, var(--bg) 100%)",
         }}
       >
-        {/* INNER CORE */}
-        <div
-          className="relative h-full w-full overflow-hidden bg-black"
-          style={{
-            borderRadius: "calc(1.25rem - 0.375rem)",
-            boxShadow:
-              "inset 0 1px 1px rgba(255,255,255,0.07), inset 0 0 0 1px rgba(255,255,255,0.03)",
-          }}
-        >
+        {/* INNER CORE — warm dark image well */}
+        <div className="relative h-full w-full overflow-hidden bg-bg">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={video.thumbnail}
@@ -53,20 +54,14 @@ export default function VideoCard({
           />
 
           {video.duration && (
-            <div className="meta absolute bottom-2 right-2 rounded-full border border-fg/15 bg-bg/70 px-2 py-0.5 text-[10px] font-medium text-fg backdrop-blur-md">
+            <span className="meta absolute bottom-2 right-2 rounded-full border border-fg/10 bg-bg/70 px-2 py-0.5 text-[10px] font-medium text-fg backdrop-blur-md">
               {video.duration}
-            </div>
+            </span>
           )}
 
-          {/* Hover play — split bg-tint and pill into separate transitions */}
-          <div className="pointer-events-none absolute inset-0 grid place-items-center bg-bg/0 opacity-0 transition-[opacity,background-color] duration-hover ease-ui group-hover:bg-bg/30 group-hover:opacity-100">
-            <span
-              className={[
-                "grid h-12 w-12 place-items-center rounded-full bg-fg/95 shadow-card-hover",
-                "scale-[0.95] transition-transform duration-lift ease-ui",
-                "group-hover:scale-100",
-              ].join(" ")}
-            >
+          {/* Hover play — separate transitions for fill and pill */}
+          <div className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-hover ease-ui group-hover:opacity-100">
+            <span className="grid h-12 w-12 place-items-center rounded-full bg-fg/95 shadow-card-hover transition-transform duration-lift ease-ui group-hover:scale-100 scale-95">
               <svg viewBox="0 0 24 24" className="h-5 w-5 translate-x-0.5 fill-bg">
                 <path d="M8 5v14l11-7z" />
               </svg>
