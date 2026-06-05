@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque } from "next/font/google";
-import { GeistSans } from "geist/font/sans";
+import { Hanken_Grotesk, Inter } from "next/font/google";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import TopNav from "@/components/nav/TopNav";
@@ -9,19 +8,23 @@ import Providers from "./providers";
 
 /**
  * Three typefaces, chosen for an editorial / cinematic / quietly authoritative
- * brand. All variable, all free, all self-hosted (zero layout shift, no
- * third-party hop).
+ * brand.
  *
- *  - Bricolage Grotesque (display): wide grotesque with optical sizing axis.
- *  - Geist Sans (body): Vercel's neo-grotesque. Quiet, modern, variable.
- *  - Geist Mono (meta): metric-paired companion for durations, view counts,
- *    eyebrow labels.
+ *  - Hanken Grotesk (display): clean, variable grotesque with high editorial feel.
+ *  - Inter (body): classic, highly readable sans-serif.
+ *  - Geist Mono (meta): companion for durations, view counts, and eyebrow labels.
  */
-const bricolage = Bricolage_Grotesque({
+const hanken = Hanken_Grotesk({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-display",
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -62,6 +65,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
+
 export default function RootLayout({
   children,
 }: {
@@ -70,9 +75,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${bricolage.variable} ${GeistSans.variable} ${GeistMono.variable}`}
+      className={`dark ${hanken.variable} ${inter.variable} ${GeistMono.variable}`}
     >
       <body className="overflow-x-hidden bg-bg text-fg antialiased">
+        <BackgroundGradientAnimation 
+          containerClassName="fixed inset-0 -z-50 pointer-events-auto opacity-30" 
+          interactive={false} 
+          size="100%" 
+        />
         <Providers>
           <a href="#main" className="skip-link">
             Skip to content
@@ -89,7 +99,7 @@ export default function RootLayout({
           <div aria-hidden="true" className="grain-overlay" />
           <main
             id="main"
-            className="min-h-[100dvh] w-full max-w-full overflow-x-hidden pb-24 md:pb-0"
+            className="min-h-[100dvh] w-full max-w-full overflow-x-hidden pb-24 md:pb-0 relative z-10"
           >
             {children}
           </main>

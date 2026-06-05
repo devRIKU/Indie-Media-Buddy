@@ -76,12 +76,13 @@ export default function MobileBottomNav() {
       initial={{ opacity: 0, y: 32, filter: "blur(10px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
-      className="glass-nav fixed inset-x-0 bottom-4 z-30 mx-auto flex w-fit max-w-[calc(100%-2rem)] items-center justify-center rounded-full px-1.5 py-1.5 md:hidden"
+      className="glass-nav fixed inset-x-0 z-30 mx-auto flex w-fit max-w-[calc(100%-2rem)] items-center justify-center rounded-full px-1.5 py-1.5 md:hidden"
       style={{
+        bottom: "calc(1rem + env(safe-area-inset-bottom, 0px))",
         boxShadow:
-          "inset 0 1px 0 oklch(from var(--fg) l c h / 0.08)," +
-          " inset 0 0 0 1px oklch(from var(--fg) l c h / 0.06)," +
-          " 0 16px 40px -16px oklch(8% 0.02 55 / 0.7)",
+          "inset 0 1px 0 rgba(229, 226, 225, 0.08)," +
+          " inset 0 0 0 1px rgba(229, 226, 225, 0.06)," +
+          " 0 16px 40px -16px rgba(22, 20, 20, 0.7)",
       }}
     >
       <ul className="flex items-center gap-0.5">

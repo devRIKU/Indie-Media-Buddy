@@ -53,8 +53,8 @@ function Hint({
             className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface-2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-fg"
             style={{
               boxShadow:
-                "0 4px 12px -4px oklch(0% 0 0 / 0.4)," +
-                " inset 0 0 0 1px oklch(from var(--fg) l c h / 0.08)",
+                "0 4px 12px -4px rgba(0, 0, 0, 0.4)," +
+                " inset 0 0 0 1px rgba(229, 226, 225, 0.08)",
             }}
           >
             {label}
@@ -105,9 +105,9 @@ export default function TopNav() {
           className="glass-nav pointer-events-auto flex max-w-full items-center gap-1 rounded-full p-1.5"
           style={{
             boxShadow:
-              "inset 0 1px 0 oklch(from var(--fg) l c h / 0.08)," +
-              " inset 0 0 0 1px oklch(from var(--fg) l c h / 0.06)," +
-              " 0 8px 32px -12px oklch(8% 0.02 55 / 0.6)",
+              "inset 0 1px 0 rgba(229, 226, 225, 0.08)," +
+              " inset 0 0 0 1px rgba(229, 226, 225, 0.06)," +
+              " 0 8px 32px -12px rgba(22, 20, 20, 0.6)",
           }}
         >
           <Link

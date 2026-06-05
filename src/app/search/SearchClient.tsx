@@ -64,7 +64,7 @@ export default function SearchClient({
 
         {initialQuery ? (
           <>
-            <h1 className="font-display text-2xl font-semibold tracking-heading">
+            <h1 className="font-display text-2xl font-semibold tracking-heading text-fg sm:text-[2.5rem] sm:leading-tight">
               Results for <span className="text-accent">{initialQuery}</span>
             </h1>
             <p className="meta mt-2 text-muted">
@@ -98,7 +98,7 @@ export default function SearchClient({
                 <button
                   key={s}
                   onClick={() => router.push(`/search?q=${encodeURIComponent(s)}`)}
-                  className="min-h-11 rounded-full border border-border bg-bg px-4 py-2 text-sm font-medium text-fg-2 transition-[transform,color,border-color] hover:border-accent hover:text-accent active:scale-[0.97] active:duration-press active:ease-press"
+                  className="min-h-11 rounded-full border border-border bg-bg px-4 py-2 text-sm font-medium text-fg-2 transition-[transform,color,border-color] duration-hover ease-ui hover:border-accent hover:text-accent active:scale-[0.97] active:duration-press active:ease-press"
                 >
                   {s}
                 </button>

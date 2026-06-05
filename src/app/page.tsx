@@ -8,15 +8,21 @@ export const revalidate = 3600;
 
 export default async function HomePage() {
   const heroItems = await getHero();
+  const heroExclude = new Set(heroItems.map((v) => v.id));
   const orderedRails = HOME_RAIL_ORDER.map(
     (slug) => RAILS.find((r) => r.slug === slug)!
   ).filter(Boolean);
 
-  // Fetch all rail data in parallel
+  // Fetch all rail data in parallel. The first rail (spotlight) shares the
+  // hero's source channels, so we drop the hero ids to avoid showing the
+  // same four videos twice on the home page.
   const railData = await Promise.all(
-    orderedRails.map(async (rail) => ({
+    orderedRails.map(async (rail, idx) => ({
       rail,
-      videos: await getRailVideos(rail.slug),
+      videos: await getRailVideos(
+        rail.slug,
+        idx === 0 ? heroExclude : undefined
+      ),
     }))
   );
 
@@ -50,11 +56,11 @@ export default async function HomePage() {
             </p>
           </div>
           <nav aria-label="Footer" className="meta flex flex-wrap gap-x-6 gap-y-3 text-muted md:gap-x-8">
-            <a href="/category/science" className="transition-colors hover:text-fg">Browse</a>
-            <a href="/search" className="transition-colors hover:text-fg">Search</a>
-            <a href="#" className="transition-colors hover:text-fg">About</a>
-            <a href="#" className="transition-colors hover:text-fg">Privacy</a>
-            <a href="#" className="transition-colors hover:text-fg">Terms</a>
+            <a href="/category/science" className="transition-colors duration-hover ease-ui hover:text-fg">Browse</a>
+            <a href="/search" className="transition-colors duration-hover ease-ui hover:text-fg">Search</a>
+            <a href="#" className="transition-colors duration-hover ease-ui hover:text-fg">About</a>
+            <a href="#" className="transition-colors duration-hover ease-ui hover:text-fg">Privacy</a>
+            <a href="#" className="transition-colors duration-hover ease-ui hover:text-fg">Terms</a>
           </nav>
         </div>
         <p className="meta mx-auto mt-10 max-w-container text-faint">

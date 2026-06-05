@@ -24,7 +24,7 @@ export default function PlayerCover({
         className="absolute inset-0 -z-10"
         style={{
           background:
-            "linear-gradient(90deg, oklch(8% 0.02 55 / 0.92) 0%, oklch(8% 0.02 55 / 0.6) 45%, oklch(8% 0.02 55 / 0.15) 85%, transparent 100%), linear-gradient(180deg, transparent 50%, oklch(8% 0.02 55 / 0.7) 100%)",
+            "linear-gradient(90deg, rgba(14, 14, 14, 0.92) 0%, rgba(14, 14, 14, 0.6) 45%, rgba(14, 14, 14, 0.15) 85%, transparent 100%), linear-gradient(180deg, transparent 50%, rgba(14, 14, 14, 0.7) 100%)",
         }}
       />
 

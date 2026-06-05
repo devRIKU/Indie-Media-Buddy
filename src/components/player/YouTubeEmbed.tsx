@@ -69,13 +69,13 @@ export default function YouTubeEmbed({
   const [loaded, setLoaded] = useState(false);
 
   const src =
-    `https://www.youtube-nocookie.com/embed/${videoId}` +
-    `?autoplay=${autoplay ? 1 : 0}` +
+    `https://www.youtube.com/embed/${videoId}` +
+    `?controls=1` +
     `&modestbranding=1` +
     `&rel=0` +
-    `&playsinline=1` +
-    `&color=white` +
+    `&showinfo=0` +
     `&iv_load_policy=3` +
+    `&autoplay=${autoplay ? 1 : 0}` +
     `&enablejsapi=1`;
 
   useEffect(() => {
@@ -130,7 +130,7 @@ export default function YouTubeEmbed({
   }, [videoId]);
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-black">
+    <div className="video-wrapper">
       {/* Skeleton — matches the iframe's 16:9 silhouette so the shape never
           jumps. A faint accent indicator + a slow shimmer reads as "loading
           this specific thing" rather than "generic loading". */}
@@ -140,7 +140,7 @@ export default function YouTubeEmbed({
             className="absolute inset-0 opacity-60"
             style={{
               background:
-                "linear-gradient(110deg, oklch(from var(--surface) calc(l - 0.02) c h) 0%, oklch(from var(--surface) calc(l + 0.04) c h) 50%, oklch(from var(--surface) calc(l - 0.02) c h) 100%)",
+                "linear-gradient(110deg, #1a1919 0%, #2a2929 50%, #1a1919 100%)",
               backgroundSize: "200% 100%",
               animation: "shimmer 1.6s var(--ease-ui) infinite",
             }}

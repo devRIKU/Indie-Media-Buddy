@@ -53,30 +53,57 @@ function buildHeroTagline(title: string, channelTitle: string): string {
 /* Public API                                                                */
 /* ──────────────────────────────────────────────────────────────────────── */
 
-export async function getRailVideos(slug: string): Promise<VideoItem[]> {
+/** Minimum rail size we want to keep after de-dup. Below this we fall back
+ *  to the un-deduped source so a small curated rail never disappears. */
+const RAIL_MIN_LENGTH = 3;
+
+/**
+ * Resolve a rail by slug. The caller can pass `excludeIds` to drop videos
+ * already shown elsewhere on the page (e.g. the hero). The exclusion is a
+ * soft preference: if filtering would leave the rail too thin, we serve the
+ * full list and accept the brief overlap.
+ */
+export async function getRailVideos(
+  slug: string,
+  excludeIds: ReadonlySet<string> = new Set()
+): Promise<VideoItem[]> {
   const rail = RAILS.find((r) => r.slug === slug);
   if (!rail) return [];
 
   if (isLiveMode() && rail.channelIds && rail.channelIds.length > 0) {
     const vids = await getLatestFromChannels(rail.channelIds, 4);
-    if (vids.length > 0) return vids;
+    if (vids.length > 0) {
+      if (excludeIds.size === 0) return vids;
+      const deduped = vids.filter((v) => !excludeIds.has(v.id));
+      return deduped.length >= RAIL_MIN_LENGTH ? deduped : vids;
+    }
     console.warn(`[data] live mode fell back to mock for rail "${slug}"`);
   }
 
-  return MOCK_VIDEOS[slug] ?? [];
+  const mock = MOCK_VIDEOS[slug] ?? [];
+  if (excludeIds.size === 0) return mock;
+  const deduped = mock.filter((v) => !excludeIds.has(v.id));
+  return deduped.length >= RAIL_MIN_LENGTH ? deduped : mock;
 }
 
 /**
  * Get hero items. In live mode, fetches top videos from the spotlight channels.
  * Falls back to curated mock hero when live mode is unavailable or returns
  * insufficient results.
+ *
+ * `excludeIds` lets the caller drop videos that should not appear in the
+ * hero (e.g. items already shown in a rail above the hero on other pages).
  */
-export async function getHero(): Promise<FeaturedHeroItem[]> {
+export async function getHero(
+  excludeIds: ReadonlySet<string> = new Set()
+): Promise<FeaturedHeroItem[]> {
   if (isLiveMode() && SPOTLIGHT_CHANNELS.length > 0) {
     const vids = await getLatestFromChannels(SPOTLIGHT_CHANNELS, 6);
-    if (vids.length >= 4) {
+    const filtered =
+      excludeIds.size > 0 ? vids.filter((v) => !excludeIds.has(v.id)) : vids;
+    if (filtered.length >= 4) {
       // Take the top 4 by view count (getLatestFromChannels already sorts)
-      return vids.slice(0, 4).map((v, i) => ({
+      return filtered.slice(0, 4).map((v, i) => ({
         ...v,
         tagline: buildHeroTagline(v.title, v.channelTitle),
         tint: HERO_TINTS[i % HERO_TINTS.length],
@@ -85,7 +112,11 @@ export async function getHero(): Promise<FeaturedHeroItem[]> {
     console.warn("[data] live hero fetch returned insufficient results, using mock");
   }
 
-  return MOCK_HERO;
+  const mock = MOCK_HERO;
+  if (excludeIds.size === 0) return mock;
+  // Soft filter: if excluding leaves the hero empty, serve the curated set.
+  const filtered = mock.filter((v) => !excludeIds.has(v.id));
+  return filtered.length > 0 ? filtered : mock;
 }
 
 export async function getVideo(id: string): Promise<VideoItem | undefined> {

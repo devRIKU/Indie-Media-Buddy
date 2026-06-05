@@ -5,7 +5,7 @@ import anime from "animejs";
 import type { FeaturedHeroItem } from "@/lib/types";
 import { formatViews } from "@/lib/format";
 import ProgressiveBlur from "@/components/ui/ProgressiveBlur";
-import MagneticButton from "@/components/ui/MagneticButton";
+
 import Eyebrow from "@/components/ui/Eyebrow";
 
 /**
@@ -113,8 +113,7 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
             src={item.backdrop ?? item.thumbnail}
             alt=""
             loading={i === 0 ? "eager" : "lazy"}
-            // @ts-expect-error — fetchpriority is valid HTML
-            fetchpriority={i === 0 ? "high" : undefined}
+            fetchPriority={i === 0 ? "high" : undefined}
             className="h-full w-full object-cover"
             style={{
               objectPosition: "center 30%",
@@ -130,13 +129,13 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
         style={{
           background:
             "linear-gradient(90deg, " +
-              "oklch(from var(--bg) l c h / 0.98) 0%, " +
-              "oklch(from var(--bg) l c h / 0.92) 28%, " +
-              "oklch(from var(--bg) l c h / 0.72) 48%, " +
-              "oklch(from var(--bg) l c h / 0.25) 70%, " +
+              "rgba(19, 19, 19, 0.98) 0%, " +
+              "rgba(19, 19, 19, 0.92) 28%, " +
+              "rgba(19, 19, 19, 0.72) 48%, " +
+              "rgba(19, 19, 19, 0.25) 70%, " +
               "transparent 92%" +
             "), " +
-            "linear-gradient(180deg, transparent 55%, oklch(from var(--bg) l c h / 0.6) 85%, var(--bg) 100%)",
+            "linear-gradient(180deg, transparent 55%, rgba(19, 19, 19, 0.6) 85%, var(--bg) 100%)",
         }}
       />
 
@@ -216,42 +215,32 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
           <div
             data-reveal
             style={{ opacity: 0 }}
-            className="mt-9 flex flex-wrap items-center gap-3"
+            className="mt-9 flex flex-wrap items-center gap-4"
           >
-            <MagneticButton
-              href={`/watch/${current.id}`}
-              variant="primary"
-              leading={
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-accent-fg/15">
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 translate-x-0.5 fill-current">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </span>
-              }
+            <button
+              onClick={() => window.location.href = `/watch/${current.id}`}
+              className="flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-sm font-semibold text-accent-fg transition-[transform,background-color] duration-hover ease-ui hover:scale-[1.03] hover:bg-accent-hover active:scale-95 active:duration-press active:ease-press"
             >
+              <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current">
+                <path d="M8 5v14l11-7z" />
+              </svg>
               Watch now
-            </MagneticButton>
-            <MagneticButton
-              variant="secondary"
-              leading={
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-fg/8">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-3.5 w-3.5"
-                  >
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                </span>
-              }
-              trailing={null as never}
-            >
+            </button>
+
+            <button className="flex items-center gap-2 rounded-md bg-fg/10 px-6 py-3 text-sm font-semibold text-fg backdrop-blur-md ring-1 ring-fg/20 transition-[transform,background-color] duration-hover ease-ui hover:scale-[1.03] hover:bg-fg/20 active:scale-95 active:duration-press active:ease-press">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
               My list
-            </MagneticButton>
+            </button>
           </div>
         </div>
 
@@ -296,9 +285,9 @@ function DoubleBezelPreview({
       style={{
         borderRadius: "2rem",
         background:
-          "linear-gradient(160deg, oklch(from var(--surface) calc(l + 0.03) c h / 0.6), oklch(from var(--bg) l c h / 0.4))",
+          "linear-gradient(160deg, rgba(32, 31, 31, 0.6), rgba(19, 19, 19, 0.4))",
         boxShadow:
-          "inset 0 1px 0 oklch(from var(--fg) l c h / 0.06), inset 0 -1px 0 oklch(from var(--bg) l c h / 0.5)",
+          "inset 0 1px 0 rgba(229, 226, 225, 0.06), inset 0 -1px 0 rgba(19, 19, 19, 0.5)",
       }}
     >
       <div
@@ -325,7 +314,7 @@ function DoubleBezelPreview({
           className="absolute inset-x-0 bottom-0 h-1/3"
           style={{
             background:
-              "linear-gradient(180deg, transparent, oklch(8% 0.02 55 / 0.55))",
+              "linear-gradient(180deg, transparent, rgba(14, 14, 14, 0.55))",
           }}
         />
       </div>

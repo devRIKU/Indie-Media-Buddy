@@ -49,3 +49,18 @@ export type FeaturedHeroItem = VideoItem & {
   /** Hex color tint for the bloom behind the hero. */
   tint: string;
 };
+
+/**
+ * Response shape for GET /api/videos?ids=...
+ * Kept in /lib/types so both the server route and the client can import it
+ * without pulling in `next/server` into the client bundle.
+ */
+export type VideosByIdsResponse = {
+  items: VideoItem[];
+  /** How the response was sourced. Useful for client-side debugging. */
+  source: "live" | "mock" | "empty";
+  /** Echo of the requested ids in the order they were resolved (or attempted). */
+  requested: string[];
+  /** Ids from the request that we couldn't resolve. Helps clients prune localStorage. */
+  missing: string[];
+};

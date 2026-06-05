@@ -41,7 +41,7 @@ export const MOCK_VIDEOS: Record<string, VideoItem[]> = {
       id: "L45Q1_psDqk",
       title: "Is Anything Real?",
       channelTitle: "Vsauce",
-      channelId: "UC6nSFpj9HTCZ5t-N3Rm3v1g",
+      channelId: "UC6nSFpj9HTCZ5t4N3Rm3v1g",
       publishedAt: "2018-06-25",
       duration: "23:44",
       durationSeconds: 1424,

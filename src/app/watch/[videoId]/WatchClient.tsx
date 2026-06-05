@@ -47,7 +47,7 @@ export default function WatchClient({
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(60% 60% at 50% 0%, transparent 0%, oklch(from var(--bg) l c h / 0.78) 80%), linear-gradient(180deg, oklch(from var(--bg) l c h / 0.4) 0%, var(--bg) 70%)",
+              "radial-gradient(60% 60% at 50% 0%, transparent 0%, rgba(19, 19, 19, 0.78) 80%), linear-gradient(180deg, rgba(19, 19, 19, 0.4) 0%, var(--bg) 70%)",
           }}
         />
       </div>

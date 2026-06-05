@@ -62,7 +62,7 @@ export default function PosterCard({
             className="absolute inset-x-0 bottom-0 h-[55%]"
             style={{
               background:
-                "linear-gradient(180deg, transparent 0%, oklch(from var(--bg) l c h / 0.7) 60%, oklch(from var(--bg) l c h / 0.95) 100%)",
+                "linear-gradient(180deg, transparent 0%, rgba(19, 19, 19, 0.7) 60%, rgba(19, 19, 19, 0.95) 100%)",
             }}
           />
 

@@ -287,20 +287,44 @@ export async function getLatestFromChannels(
   const allowedSet = new Set(channelIds);
 
   // Step 1: Get uploads playlist IDs for all channels (1 unit/call, cached 24h)
-  const playlistIds = await Promise.all(
-    channelIds.map(async (cid) => {
+  // Per-channel error isolation: one bad channel shouldn't kill the whole rail.
+  type PlaylistRef = { channelId: string; playlistId: string };
+  const playlistSettled = await Promise.allSettled(
+    channelIds.map(async (cid): Promise<PlaylistRef | null> => {
       const pid = await getChannelUploadsPlaylistId(cid);
-      return { channelId: cid, playlistId: pid };
+      return pid ? { channelId: cid, playlistId: pid } : null;
     })
   );
+  const playlistIds: PlaylistRef[] = playlistSettled.flatMap((r, i) => {
+    if (r.status === "fulfilled") {
+      return r.value ? [r.value] : [];
+    }
+    console.warn(
+      `[youtube] getChannelUploadsPlaylistId for ${channelIds[i]} failed: ${
+        r.reason instanceof Error ? r.reason.message : String(r.reason)
+      }`
+    );
+    return [];
+  });
 
   // Step 2: Fetch video IDs from each playlist (1 unit/call)
+  // We use allSettled here too — a failed playlist returns []. The fallback
+  // for the request is handled by the caller (data.ts / API route).
   const allVideoIds: string[] = [];
-  for (const { playlistId } of playlistIds) {
-    if (!playlistId) continue;
-    const ids = await getPlaylistVideoIds(playlistId, perChannel + 2); // fetch extra to account for Shorts
-    allVideoIds.push(...ids);
-  }
+  const idSettled = await Promise.allSettled(
+    playlistIds.map((p) => getPlaylistVideoIds(p.playlistId, perChannel + 2))
+  );
+  idSettled.forEach((r, i) => {
+    if (r.status === "fulfilled") {
+      allVideoIds.push(...r.value);
+    } else {
+      console.warn(
+        `[youtube] getPlaylistVideoIds ${i} failed: ${
+          r.reason instanceof Error ? r.reason.message : String(r.reason)
+        }`
+      );
+    }
+  });
 
   if (allVideoIds.length === 0) return [];
 
@@ -332,7 +356,9 @@ export async function getVideosByIds(ids: string[]): Promise<VideoItem[]> {
   const chunks: string[][] = [];
   for (let i = 0; i < ids.length; i += 50) chunks.push(ids.slice(i, i + 50));
 
-  const results = await Promise.all(
+  // Per-chunk error isolation: a single bad chunk (network blip, 5xx, etc.)
+  // shouldn't nuke the whole list. We log + skip it and keep the rest.
+  const settled = await Promise.allSettled(
     chunks.map(async (chunk) => {
       const url =
         `${BASE}/videos?key=${KEY}&id=${chunk.join(",")}` +
@@ -341,7 +367,19 @@ export async function getVideosByIds(ids: string[]): Promise<VideoItem[]> {
       return data?.items ?? [];
     })
   );
-  return results.flat().map(mapVideo);
+
+  const flat: YTVideoItem[] = [];
+  for (let i = 0; i < settled.length; i++) {
+    const r = settled[i];
+    if (r.status === "fulfilled") {
+      flat.push(...r.value);
+    } else {
+      console.warn(
+        `[youtube] getVideosByIds chunk ${i} failed: ${r.reason instanceof Error ? r.reason.message : String(r.reason)}`
+      );
+    }
+  }
+  return flat.map(mapVideo);
 }
 
 /**
