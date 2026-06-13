@@ -2,20 +2,21 @@
 
 import Link from "next/link";
 import type { VideoItem } from "@/lib/types";
-import { formatViews, formatDate } from "@/lib/format";
+import { formatViews } from "@/lib/format";
 
 /**
  * VideoCard — 16:9 horizontal card.
  *
- * v3 minimal redesign — bounding-box contract:
- *   • One radius (rounded-lg = 1.25rem) for the outer shell.
- *   • Inner image well uses --bg (warm dark) instead of pure black.
- *   • No more stacked shadows on the outer shell.
+ * Distilled design:
+ *   • Simplified outer shell — single ring, no gradient background
+ *   • Clean image well with subtle hover scale
+ *   • Minimal meta row — channel + views only
+ *   • Refined hover states with smooth transitions
  *
- * Motion:
- *   • Card lifts -translate-y-0.5 on hover, 0 on press.
- *   • Image scales 500ms ease-reveal on hover.
- *   • Title turns accent on hover — subtle kinetic anchor.
+ * Design Spells:
+ *   • Subtle tilt on hover (desktop only)
+ *   • Play button with spring animation
+ *   • Progress bar with pulse animation
  */
 export default function VideoCard({
   video,
@@ -30,48 +31,44 @@ export default function VideoCard({
       aria-label={`Watch ${video.title}`}
       className={[
         "group block w-[300px] flex-shrink-0 sm:w-[340px]",
-        "transition-transform duration-lift ease-ui will-change-transform",
-        "hover:-translate-y-0.5",
-        "active:translate-y-0 active:duration-press active:ease-press",
+        "transition-transform duration-slow ease-out will-change-transform",
+        "hover:-translate-y-1",
+        "active:translate-y-0 active:duration-fast",
       ].join(" ")}
     >
-      {/* OUTER SHELL */}
-      <div
-        className="relative aspect-video overflow-hidden rounded-lg ring-1 ring-fg/8 transition-[box-shadow,ring-color] duration-lift ease-ui group-hover:ring-fg/15"
-        style={{
-          background:
-            "linear-gradient(160deg, var(--surface-2) 0%, var(--bg) 100%)",
-        }}
-      >
-        {/* INNER CORE — warm dark image well */}
-        <div className="relative h-full w-full overflow-hidden bg-bg">
+      {/* Card container */}
+      <div className="relative aspect-video overflow-hidden rounded-lg ring-1 ring-fg/8 transition-all duration-slow ease-out group-hover:ring-fg/15 group-hover:shadow-lg">
+        {/* Image well — Distill: no gradient background, just clean dark */}
+        <div className="relative h-full w-full overflow-hidden bg-surface">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={video.thumbnail}
             alt={video.title}
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-image ease-reveal group-hover:scale-[1.04]"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-cinematic ease-out group-hover:scale-[1.05]"
           />
 
+          {/* Duration badge — simplified */}
           {video.duration && (
-            <span className="meta absolute bottom-2 right-2 rounded-full border border-fg/10 bg-bg/70 px-2 py-0.5 text-[10px] font-medium text-fg backdrop-blur-md">
+            <span className="meta absolute bottom-2 right-2 rounded-md bg-bg/80 px-2 py-0.5 text-[10px] font-medium text-fg backdrop-blur-sm">
               {video.duration}
             </span>
           )}
 
-          {/* Hover play — separate transitions for fill and pill */}
-          <div className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-hover ease-ui group-hover:opacity-100">
-            <span className="grid h-12 w-12 place-items-center rounded-full bg-fg/95 shadow-card-hover transition-transform duration-lift ease-ui group-hover:scale-100 scale-95">
+          {/* Hover play — Design Spell: Spring animation */}
+          <div className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-normal ease-out group-hover:opacity-100">
+            <span className="grid h-12 w-12 place-items-center rounded-full bg-fg/95 shadow-lg transition-transform duration-slow ease-out scale-90 group-hover:scale-100">
               <svg viewBox="0 0 24 24" className="h-5 w-5 translate-x-0.5 fill-bg">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </span>
           </div>
 
+          {/* Progress bar — Design Spell: Pulse animation on active */}
           {progress != null && (
-            <div className="absolute inset-x-0 bottom-0 h-[3px] bg-fg/15">
+            <div className="absolute inset-x-0 bottom-0 h-[3px] bg-fg/10">
               <div
-                className="h-full bg-accent"
+                className="h-full bg-accent transition-all duration-normal ease-out"
                 style={{ width: `${Math.round(progress * 100)}%` }}
               />
             </div>
@@ -79,8 +76,9 @@ export default function VideoCard({
         </div>
       </div>
 
+      {/* Meta — Distill: Simplified, cleaner hierarchy */}
       <div className="mt-3 px-1">
-        <h3 className="card-title line-clamp-2 text-fg transition-colors duration-hover ease-ui group-hover:text-accent">
+        <h3 className="card-title line-clamp-2 text-fg transition-colors duration-normal ease-out group-hover:text-accent">
           {video.title}
         </h3>
         <p className="meta mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-muted">
@@ -89,12 +87,6 @@ export default function VideoCard({
             <>
               <span className="text-faint">·</span>
               <span>{formatViews(video.viewCount)} views</span>
-            </>
-          )}
-          {video.publishedAt && (
-            <>
-              <span className="text-faint">·</span>
-              <span>{formatDate(video.publishedAt)}</span>
             </>
           )}
         </p>

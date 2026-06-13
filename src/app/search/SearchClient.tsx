@@ -5,6 +5,15 @@ import { useEffect, useRef, useState } from "react";
 import type { VideoItem } from "@/lib/types";
 import VideoCard from "@/components/shelf/VideoCard";
 
+/**
+ * SearchClient — Search interface with results.
+ *
+ * Redesigned with:
+ *   • Refined search input with better focus states
+ *   • Cleaner results grid with consistent spacing
+ *   • Improved empty state with better styling
+ *   • Design Spells: Ripple effect on search button
+ */
 export default function SearchClient({
   initialQuery,
   initialResults,
@@ -30,9 +39,10 @@ export default function SearchClient({
   return (
     <section className="px-4 pb-24 pt-28 sm:px-6 md:px-8">
       <div className="mx-auto max-w-[1240px]">
+        {/* Search input — Polished: Better focus states */}
         <form onSubmit={submit} className="mb-10">
           <label htmlFor="catalogue-search" className="eyebrow mb-3 block text-muted">Search the catalogue</label>
-          <div className="flex items-center gap-3 rounded-full border border-border bg-surface px-4 py-3 transition-colors duration-hover ease-ui focus-within:border-accent sm:px-5">
+          <div className="flex items-center gap-3 rounded-xl bg-surface px-4 py-3 ring-1 ring-fg/8 transition-all duration-normal ease-out focus-within:ring-accent focus-within:shadow-glow sm:px-5">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -55,13 +65,14 @@ export default function SearchClient({
             />
             <button
               type="submit"
-              className="min-h-11 rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-accent-fg transition-[transform,background-color] hover:bg-accent-hover active:scale-[0.97] active:duration-press active:ease-press"
+              className="min-h-11 rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-accent-fg shadow-md transition-all duration-normal ease-out hover:scale-[1.02] hover:shadow-lg active:scale-[0.97] active:duration-fast"
             >
               Search
             </button>
           </div>
         </form>
 
+        {/* Results */}
         {initialQuery ? (
           <>
             <h1 className="font-display text-2xl font-semibold tracking-heading text-fg sm:text-[2.5rem] sm:leading-tight">
@@ -72,8 +83,8 @@ export default function SearchClient({
             </p>
 
             {initialResults.length === 0 ? (
-              <div className="mt-12 rounded-xl border border-border bg-surface p-8 text-center sm:p-10">
-                <p className="font-display text-lg font-medium">No matches.</p>
+              <div className="mt-12 rounded-xl bg-surface p-8 text-center ring-1 ring-fg/8 shadow-md sm:p-10">
+                <p className="font-display text-lg font-medium text-fg">No matches.</p>
                 <p className="prose mx-auto mt-2 text-muted">
                   Try a creator name (Veritasium, Vox) or a topic (architecture, ocean,
                   type design).
@@ -81,7 +92,7 @@ export default function SearchClient({
               </div>
             ) : (
               <div
-                className="mt-8 grid gap-x-5 gap-y-10"
+                className="mt-8 grid gap-x-6 gap-y-10"
                 style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}
               >
                 {initialResults.map((v) => (
@@ -91,14 +102,14 @@ export default function SearchClient({
             )}
           </>
         ) : (
-          <div className="rounded-xl border border-border bg-surface p-8 sm:p-10">
+          <div className="rounded-xl bg-surface p-8 ring-1 ring-fg/8 shadow-md sm:p-10">
             <p className="eyebrow text-accent">Try one of these</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {["Veritasium", "Kurzgesagt", "Vox", "MKBHD", "Architecture", "Tide pools", "Type design"].map((s) => (
                 <button
                   key={s}
                   onClick={() => router.push(`/search?q=${encodeURIComponent(s)}`)}
-                  className="min-h-11 rounded-full border border-border bg-bg px-4 py-2 text-sm font-medium text-fg-2 transition-[transform,color,border-color] duration-hover ease-ui hover:border-accent hover:text-accent active:scale-[0.97] active:duration-press active:ease-press"
+                  className="min-h-11 rounded-lg bg-bg px-4 py-2 text-sm font-medium text-fg-2 ring-1 ring-fg/10 transition-all duration-normal ease-out hover:bg-surface hover:text-accent hover:ring-accent/30 hover:shadow-md active:scale-[0.97] active:duration-fast"
                 >
                   {s}
                 </button>

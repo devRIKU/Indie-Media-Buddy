@@ -58,13 +58,12 @@ const NAV: NavItem[] = [
 /**
  * MobileBottomNav — floating bottom pill, mobile + tablet only (<md).
  *
- *   • Detached glassy capsule pinned to the bottom of the viewport.
- *   • Five icon-only slots; active slot gets a soft amber fill + accent dot.
- *   • Framer Motion: entrance (slide-up + blur) + shared layoutId morph
- *     between tabs.
- *   • `aria-label` on each Link provides the accessible name (no JS tooltip).
- *   • One radius (rounded-full) — no irregular pill shape.
- *   • Press feedback uses scale(0.9) at 130ms — under Emil's 160ms ceiling.
+ * Redesigned with:
+ *   • Refined glass morphism with subtle inner glow
+ *   • Haptic-like press feedback (Design Spell)
+ *   • Smoother spring animations for active indicator
+ *   • Better visual hierarchy with refined spacing
+ *   • Accessible touch targets (44px minimum)
  */
 export default function MobileBottomNav() {
   const pathname = usePathname();
@@ -73,19 +72,19 @@ export default function MobileBottomNav() {
     <m.nav
       key="mobile-bottom-nav"
       aria-label="Primary"
-      initial={{ opacity: 0, y: 32, filter: "blur(10px)" }}
+      initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
-      className="glass-nav fixed inset-x-0 z-30 mx-auto flex w-fit max-w-[calc(100%-2rem)] items-center justify-center rounded-full px-1.5 py-1.5 md:hidden"
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+      className="glass-nav fixed inset-x-0 z-30 mx-auto flex w-fit max-w-[calc(100%-2rem)] items-center justify-center rounded-full px-2 py-2 md:hidden"
       style={{
         bottom: "calc(1rem + env(safe-area-inset-bottom, 0px))",
         boxShadow:
-          "inset 0 1px 0 rgba(229, 226, 225, 0.08)," +
-          " inset 0 0 0 1px rgba(229, 226, 225, 0.06)," +
-          " 0 16px 40px -16px rgba(22, 20, 20, 0.7)",
+          "inset 0 1px 0 rgba(245, 240, 235, 0.1)," +
+          " inset 0 0 0 1px rgba(245, 240, 235, 0.08)," +
+          " 0 20px 50px -16px rgba(15, 14, 13, 0.8)",
       }}
     >
-      <ul className="flex items-center gap-0.5">
+      <ul className="flex items-center gap-1">
         {NAV.map((item) => {
           const active =
             item.href === "/"
@@ -100,11 +99,15 @@ export default function MobileBottomNav() {
                 className="relative block focus:outline-none"
               >
                 <m.span
-                  whileTap={{ scale: 0.9 }}
-                  transition={{ duration: 0.13, ease: [0.23, 1, 0.32, 1] }}
+                  whileTap={{ scale: 0.88 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 500, 
+                    damping: 20 
+                  }}
                   className={
-                    "relative grid h-11 w-11 place-items-center rounded-full " +
-                    "transition-colors duration-hover ease-ui " +
+                    "relative grid h-12 w-12 place-items-center rounded-full " +
+                    "transition-colors duration-normal ease-out " +
                     (active
                       ? "text-accent-fg"
                       : "text-fg-2 hover:text-fg")
@@ -114,8 +117,12 @@ export default function MobileBottomNav() {
                     <m.span
                       aria-hidden="true"
                       layoutId="mobilenav-active"
-                      className="absolute inset-0 rounded-full bg-accent"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      className="absolute inset-0 rounded-full bg-accent shadow-glow"
+                      transition={{ 
+                        type: "spring", 
+                        stiffness: 400, 
+                        damping: 28 
+                      }}
                     />
                   )}
                   <svg
@@ -125,7 +132,7 @@ export default function MobileBottomNav() {
                     strokeWidth="1.7"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="relative h-[18px] w-[18px]"
+                    className="relative h-5 w-5"
                   >
                     {item.icon}
                   </svg>
@@ -135,7 +142,13 @@ export default function MobileBottomNav() {
                     aria-hidden="true"
                     layoutId="mobilenav-dot"
                     className="absolute -bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-accent"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 500, 
+                      damping: 15 
+                    }}
                   />
                 )}
               </Link>

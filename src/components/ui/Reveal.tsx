@@ -3,18 +3,19 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 /**
- * Reveal — scroll-interpolation entry primitive.
+ * Reveal — Scroll-triggered reveal animation.
  *
- * Elements never appear statically on load. As they enter the viewport, they
- * execute a gentle, heavy fade-up with blur resolve, simulating mass and
- * spring. Cubic-bezier (0.22, 1, 0.36, 1) — out-quart-ish, the Apple-style
- * curve that makes UI feel like physical objects decelerating.
+ * Design Spell: Stagger reveal with blur-to-sharp effect.
+ * Elements fade in with a subtle blur that resolves as they enter viewport.
+ * Uses Apple-style easing for natural deceleration.
  *
- * One-shot (disconnects after first reveal). Honours prefers-reduced-motion.
+ * One-shot (disconnects after first reveal). Honors prefers-reduced-motion.
  *
  * @param delay  ms — stagger neighbouring elements by passing 0, 60, 120, ...
  * @param y      px — initial Y offset. Default 24.
  * @param blur   px — initial blur radius. Default 6.
+ * @param scale  number — initial scale. Default 1 (no scale).
+ * @param rotate number — initial rotate in degrees. Default 0.
  */
 export default function Reveal({
   children,
@@ -22,6 +23,8 @@ export default function Reveal({
   delay = 0,
   y = 24,
   blur = 6,
+  scale = 1,
+  rotate = 0,
   className = "",
   threshold = 0.12,
 }: {
@@ -30,6 +33,8 @@ export default function Reveal({
   delay?: number;
   y?: number;
   blur?: number;
+  scale?: number;
+  rotate?: number;
   className?: string;
   threshold?: number;
 }) {
@@ -75,11 +80,12 @@ export default function Reveal({
       ref={ref as never}
       className={className}
       style={{
-        // 700ms reveal: deliberate but not posing. ease-reveal token.
         transition:
-          "transform 700ms var(--ease-reveal), opacity 700ms var(--ease-reveal), filter 700ms var(--ease-reveal)",
+          "transform 700ms var(--ease-out), opacity 700ms var(--ease-out), filter 700ms var(--ease-out)",
         transitionDelay: `${delay}ms`,
-        transform: shown ? "translateY(0)" : `translateY(${y}px)`,
+        transform: shown
+          ? "translateY(0) scale(1) rotate(0deg)"
+          : `translateY(${y}px) scale(${scale}) rotate(${rotate}deg)`,
         opacity: shown ? 1 : 0,
         filter: shown ? "blur(0)" : `blur(${blur}px)`,
         willChange: shown ? undefined : "transform, opacity, filter",

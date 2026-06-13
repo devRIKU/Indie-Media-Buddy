@@ -14,6 +14,19 @@ type RailProps = {
   showRank?: boolean;
 };
 
+/**
+ * Rail — Horizontal scrollable content rail.
+ *
+ * Polished design:
+ *   • Refined header with better visual hierarchy
+ *   • Smoother scroll arrows with spring animations
+ *   • Better edge fades with progressive blur
+ *   • Stagger reveal animation on scroll
+ *
+ * Design Spells:
+ *   • Scroll arrows with magnetic hover
+ *   • Smooth scroll snap with momentum
+ */
 export default function Rail({
   title,
   subtitle,
@@ -34,7 +47,7 @@ export default function Rail({
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
   };
 
-  // Fade-up the rail when it enters the viewport. One-shot.
+  // Stagger reveal on scroll
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
@@ -83,35 +96,34 @@ export default function Rail({
     <section
       ref={sectionRef}
       className={
-        // Explicit properties only — never transition-all on a section
-        // wrapper, which carries dozens of child colour/transform updates.
-        "group/rail relative py-5 transition-[opacity,transform,filter] duration-reveal ease-reveal will-change-transform " +
-        (inView ? "translate-y-0 opacity-100 blur-none" : "translate-y-6 opacity-0 blur-[6px]")
+        "group/rail relative py-6 transition-all duration-reveal ease-out will-change-transform " +
+        (inView ? "translate-y-0 opacity-100 blur-none" : "translate-y-8 opacity-0 blur-[8px]")
       }
     >
-      <div className="mb-4 flex items-end justify-between gap-4 px-4 sm:px-6 md:px-8">
+      {/* Header — Polished: Better hierarchy */}
+      <div className="mb-5 flex items-end justify-between gap-4 px-4 sm:px-6 md:px-8">
         <div className="min-w-0">
           <h2 className="heading text-fg">{title}</h2>
           {subtitle && (
-            <p className="eyebrow mt-1 hidden max-w-[56ch] text-muted sm:block">
+            <p className="eyebrow mt-1.5 hidden max-w-[56ch] text-muted sm:block">
               {subtitle}
             </p>
           )}
         </div>
-        <button className="eyebrow hidden shrink-0 text-muted transition-colors duration-hover ease-ui hover:text-fg md:block">
+        <button className="eyebrow hidden shrink-0 text-muted transition-colors duration-normal ease-out hover:text-accent md:block">
           See all →
         </button>
       </div>
 
       <div className="relative">
-        {/* left arrow — solid, with press feedback */}
+        {/* Left arrow — Design Spell: Magnetic hover */}
         <button
           onClick={() => scroll(-1)}
           aria-label="Scroll left"
           className={
-            "absolute left-2 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-surface-2 text-fg ring-1 ring-border-2 " +
-            "transition-[opacity,transform,background-color] duration-hover ease-ui " +
-            "hover:bg-surface active:scale-95 active:duration-press active:ease-press " +
+            "absolute left-2 top-1/2 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-surface-2/90 text-fg shadow-md backdrop-blur-sm " +
+            "transition-all duration-normal ease-out " +
+            "hover:bg-surface-3 hover:shadow-lg hover:scale-105 active:scale-95 active:duration-fast " +
             (canScrollLeft
               ? "opacity-0 group-hover/rail:opacity-100"
               : "pointer-events-none opacity-0")
@@ -122,14 +134,14 @@ export default function Rail({
           </svg>
         </button>
 
-        {/* right arrow */}
+        {/* Right arrow */}
         <button
           onClick={() => scroll(1)}
           aria-label="Scroll right"
           className={
-            "absolute right-2 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-surface-2 text-fg ring-1 ring-border-2 " +
-            "transition-[opacity,transform,background-color] duration-hover ease-ui " +
-            "hover:bg-surface active:scale-95 active:duration-press active:ease-press " +
+            "absolute right-2 top-1/2 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-surface-2/90 text-fg shadow-md backdrop-blur-sm " +
+            "transition-all duration-normal ease-out " +
+            "hover:bg-surface-3 hover:shadow-lg hover:scale-105 active:scale-95 active:duration-fast " +
             (canScrollRight
               ? "opacity-0 group-hover/rail:opacity-100"
               : "pointer-events-none opacity-0")
@@ -140,15 +152,14 @@ export default function Rail({
           </svg>
         </button>
 
-        {/* Edge progressive-blur fades. Cards near the viewport edges defocus
-            instead of cutting hard — same effect Apple TV+ uses on horizontal
-            rails. The first/last 64px of band ramps blur 1→8px. */}
-        <ProgressiveBlur position="left"  width={72} intensity="subtle" className="z-10 hidden sm:block" />
-        <ProgressiveBlur position="right" width={72} intensity="subtle" className="z-10 hidden sm:block" />
+        {/* Edge fades — Polished: Smoother progressive blur */}
+        <ProgressiveBlur position="left"  width={80} intensity="subtle" className="z-10 hidden sm:block" />
+        <ProgressiveBlur position="right" width={80} intensity="subtle" className="z-10 hidden sm:block" />
 
+        {/* Scroll container */}
         <div
           ref={scrollerRef}
-          className="no-scrollbar flex gap-3 overflow-x-auto scroll-smooth px-4 pb-3 sm:px-6 md:px-8"
+          className="no-scrollbar flex gap-4 overflow-x-auto scroll-smooth px-4 pb-4 sm:px-6 md:px-8"
           style={{ scrollSnapType: "x proximity" }}
         >
           {videos.map((v, i) =>

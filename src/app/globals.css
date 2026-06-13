@@ -3,55 +3,59 @@
 @tailwind utilities;
 
 /*
- * YouPlus design tokens
+ * YouPlus Design System v2
  *
- * Editorial · cinematic · quiet authority.
+ * Editorial · cinematic · quiet authority · moments of delight.
  * Dark theme by default (evening viewing context).
  *
- * The system is built around a small, orthogonal set of scales:
- *   - 5 color ramps (bg / surface / fg / accent / border) all warm-tinted
- *   - 6 radius tokens (the bounding-box contract — pick one, never arbitrary)
- *   - 3 shadow tokens (one per elevation tier)
- *
- * Pure black is BANNED — the warmest dark surface (--bg) is used as the
- * deepest tone for inner cores, image wells, and the hero still plate.
- * This keeps the brand cohesion: every dark is a member of the same hue family.
+ * Three pillars:
+ *   1. Editorial Authority — Clean hierarchy, confident typography
+ *   2. Quiet Luxury — Warm darks, subtle textures, restrained ornamentation
+ *   3. Delightful Precision — Micro-interactions that reward attention
  */
 :root {
   color-scheme: dark;
 
-  /* ─────────────── Color ─────────────── */
-  --bg:         #131313;
-  --surface:    #201f1f;
-  --surface-2:  #2a2a2a;
-  --surface-3:  #353534;
-  --border:     #353534;
-  --border-2:   #444748;
+  /* ─────────────── Core Colors (Warm Dark) ─────────────── */
+  --bg:          #0f0e0d;
+  --surface:     #1a1918;
+  --surface-2:   #242322;
+  --surface-3:   #2e2d2c;
 
-  --fg:         #e5e2e1;
-  --fg-2:       #c4c7c8;
-  --muted:      #8e9192;
-  --faint:      #444748;
+  --fg:          #ebe9e8;
+  --fg-2:        #c8c6c5;
+  --muted:       #8a8887;
+  --faint:       #4a4948;
 
-  --accent:        #ffffff;
-  --accent-hover:  #e2e2e2;
-  --accent-press:  #c6c6c7;
-  --accent-fg:     #131313;
-  --accent-soft:   #ffffff1a;
+  --border:      #2e2d2c;
+  --border-2:    #3a3938;
 
-  /* ─────────────── Type families ─────────────── */
+  --accent:      #f5f0eb;
+  --accent-hover:#e8e2dc;
+  --accent-press:#d9d2cb;
+  --accent-fg:   #0f0e0d;
+  --accent-soft: rgba(245, 240, 235, 0.07);
+
+  /* ─────────────── Semantic Colors ─────────────── */
+  --success:     #7ec4a0;
+  --warning:     #e4c57a;
+  --error:       #e07a6a;
+  --info:        #7ab4e0;
+
+  /* ─────────────── Type Families ─────────────── */
   --font-display-fallback: "Charter", Georgia, "Times New Roman", serif;
   --font-sans-fallback:    -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-mono-fallback:    ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* ─────────────── Type sizes ─────────────── */
-  --text-xs:      0.75rem;    /* 12px */
-  --text-sm:      0.875rem;   /* 14px */
-  --text-base:    1rem;       /* 16px — BODY minimum */
-  --text-lg:      1.25rem;    /* 20px */
-  --text-xl:      1.75rem;    /* 28px */
-  --text-2xl:     2.5rem;     /* 40px */
-  --text-display: clamp(2.75rem, 6vw, 6rem); /* 44px → 96px */
+  /* ─────────────── Type Scale ─────────────── */
+  --text-xs:      0.75rem;
+  --text-sm:      0.875rem;
+  --text-base:    1rem;
+  --text-lg:      1.125rem;
+  --text-xl:      1.25rem;
+  --text-2xl:     1.75rem;
+  --text-3xl:     2.25rem;
+  --text-display: clamp(2.5rem, 5vw, 5rem);
 
   --fw-regular:  400;
   --fw-medium:   500;
@@ -75,51 +79,69 @@
   --measure-heading: 22ch;
   --measure-display: 18ch;
 
-  /* ─────────────── Spatial (4pt) ─────────────── */
-  --space-xs:  4px;
-  --space-sm:  8px;
-  --space-md:  12px;
-  --space-lg:  16px;
-  --space-xl:  24px;
-  --space-2xl: 32px;
-  --space-3xl: 48px;
-  --space-4xl: 64px;
+  /* ─────────────── Spatial (4px base) ─────────────── */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-20:  80px;
+  --space-24:  96px;
 
-  /* ─────────────── Unified radius scale ───────────────
-     The bounding-box contract. Six tokens, mathematically related:
-       lg  = md + 0.25rem    (cards on top of panels)
-       xl  = lg + 0.25rem    (player frame on top of page)
-       2xl = xl + 0.5rem     (hero frame, the outermost)
-     For double-bezel, inner radius = outer - 0.375rem (a fixed offset,
-     not a token), so the curve is always concentric.
-  */
-  --radius-sm:   0.5rem;     /*  8px — chips, micro-elements */
-  --radius-md:   1rem;       /* 16px — buttons, inputs */
-  --radius-lg:   1.25rem;    /* 20px — cards (poster, video) */
-  --radius-xl:   1.5rem;     /* 24px — panels, player frame */
-  --radius-2xl:  2rem;       /* 32px — hero frame, large surfaces */
+  /* ─────────────── Radius Scale ─────────────── */
+  --radius-sm:   0.375rem;   /*  6px — chips, small elements */
+  --radius-md:   0.625rem;   /* 10px — buttons, inputs */
+  --radius-lg:   1rem;       /* 16px — cards */
+  --radius-xl:   1.5rem;     /* 24px — modals, large panels */
+  --radius-2xl:  2rem;       /* 32px — hero frames */
+  --radius-full: 9999px;     /* Pills, avatars */
 
-  /* ─────────────── Shadows (tinted toward the warm hue) ─────────────── */
-  --shadow-card:       0 6px 18px -8px rgba(22, 20, 20, 0.55);
-  --shadow-card-hover: 0 24px 48px -16px rgba(22, 20, 20, 0.75),
-                       0 4px 12px -6px rgba(22, 20, 20, 0.5);
-  --shadow-player:     0 30px 90px -20px rgba(22, 20, 20, 0.85);
+  /* ─────────────── Shadows ─────────────── */
+  --shadow-sm:   0 1px 2px rgba(15, 14, 13, 0.3);
+  --shadow-md:   0 4px 12px rgba(15, 14, 13, 0.4);
+  --shadow-lg:   0 12px 40px rgba(15, 14, 13, 0.5);
+  --shadow-xl:   0 24px 80px rgba(15, 14, 13, 0.6);
+
+  /* Legacy shadow aliases for compatibility */
+  --shadow-card:       var(--shadow-md);
+  --shadow-card-hover: var(--shadow-lg);
+  --shadow-player:     var(--shadow-xl);
 
   /* ─────────────── Easing ─────────────── */
-  --ease-press:    cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-ui:       cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-movement: cubic-bezier(0.32, 0.72, 0, 1);
-  --ease-reveal:   cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out:     cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out:  cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-press:   cubic-bezier(0.23, 1, 0.32, 1);
 
-  --dur-press:   130ms;
-  --dur-hover:   180ms;
-  --dur-lift:    220ms;
-  --dur-nav:     240ms;
-  --dur-reveal:  700ms;
-  --dur-image:   500ms;
+  /* Legacy easing aliases */
+  --ease-ui:       var(--ease-out);
+  --ease-movement: var(--ease-in-out);
+  --ease-reveal:   var(--ease-out);
+
+  /* ─────────────── Durations ─────────────── */
+  --dur-instant:   80ms;
+  --dur-fast:      130ms;
+  --dur-normal:    200ms;
+  --dur-slow:      350ms;
+  --dur-reveal:    600ms;
+  --dur-cinematic: 900ms;
+
+  /* Legacy duration aliases */
+  --dur-press:  var(--dur-fast);
+  --dur-hover:  var(--dur-normal);
+  --dur-lift:   var(--dur-slow);
+  --dur-nav:    var(--dur-normal);
+  --dur-image:  var(--dur-slow);
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -134,38 +156,42 @@ body {
   font-kerning: normal;
   font-feature-settings: "kern", "ss01";
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   min-height: 100dvh;
 }
 
+/* ─────────────── Skip Link ─────────────── */
 .skip-link {
   position: absolute;
-  top: var(--space-md);
-  left: var(--space-md);
+  top: var(--space-3);
+  left: var(--space-3);
   z-index: 100;
-  padding: var(--space-sm) var(--space-lg);
+  padding: var(--space-2) var(--space-4);
   background: var(--accent);
   color: var(--accent-fg);
   font-weight: var(--fw-semibold);
   font-size: var(--text-sm);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   transform: translateY(-200%);
-  transition: transform 200ms var(--ease-ui);
+  transition: transform var(--dur-normal) var(--ease-out);
 }
 .skip-link:focus-visible {
   transform: translateY(0);
 }
 
+/* ─────────────── Grain Overlay ─────────────── */
 .grain-overlay {
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.05;
+  opacity: 0.03;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
+/* ─────────────── Base Resets ─────────────── */
 html {
   scroll-behavior: smooth;
 }
@@ -187,11 +213,17 @@ button {
   border: 0;
   color: inherit;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input {
+  -webkit-tap-highlight-color: transparent;
 }
 
 p, li {
   text-wrap: pretty;
 }
+
 h1, h2, h3, h4, h5, h6 {
   text-wrap: balance;
   font-family: var(--font-display), var(--font-display-fallback);
@@ -204,19 +236,26 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--accent-fg);
 }
 
+/* ─────────────── Focus States ─────────────── */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+  transition: outline-offset var(--dur-normal) var(--ease-out);
 }
 
+/* ─────────────── Scrollbar ─────────────── */
 .no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
-/* ─────────────── Type utilities ─────────────── */
-.tnum { font-variant-numeric: tabular-nums; }
+/* ─────────────── Typography Utilities ─────────────── */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
 
 .eyebrow {
   font-family: var(--font-mono), var(--font-mono-fallback);
@@ -276,31 +315,134 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.01em;
 }
 
-/* ─────────────── Hero scrim ─────────────── */
+/* ─────────────── Hero Scrim ─────────────── */
 .hero-scrim {
   background:
     linear-gradient(
       90deg,
-      rgba(19, 19, 19, 0.95) 0%,
-      rgba(19, 19, 19, 0.78) 30%,
-      rgba(19, 19, 19, 0.40) 58%,
-      rgba(19, 19, 19, 0.05) 82%,
-      transparent 100%
+      rgba(15, 14, 13, 0.98) 0%,
+      rgba(15, 14, 13, 0.88) 28%,
+      rgba(15, 14, 13, 0.65) 48%,
+      rgba(15, 14, 13, 0.20) 70%,
+      transparent 92%
     ),
     linear-gradient(
       180deg,
       transparent 50%,
-      rgba(19, 19, 19, 0.55) 82%,
+      rgba(15, 14, 13, 0.55) 85%,
       var(--bg) 100%
     );
 }
 
+/* ─────────────── Glass Navigation ─────────────── */
 .glass-nav {
-  background: rgba(19, 19, 19, 0.72);
+  background: rgba(15, 14, 13, 0.72);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
 }
 
+/* ─────────────── Video Wrapper ─────────────── */
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  background: var(--bg);
+}
+
+.video-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ─────────────── Micro-interaction Utilities ─────────────── */
+.hover-lift {
+  transition: transform var(--dur-slow) var(--ease-out),
+              box-shadow var(--dur-slow) var(--ease-out);
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -8px rgba(15, 14, 13, 0.5);
+}
+.hover-lift:active {
+  transform: translateY(0);
+  transition-duration: var(--dur-fast);
+}
+
+.press-scale {
+  transition: transform var(--dur-normal) var(--ease-out);
+}
+.press-scale:hover {
+  transform: scale(1.02);
+}
+.press-scale:active {
+  transform: scale(0.98);
+  transition-duration: var(--dur-fast);
+}
+
+/* ─────────────── Magnetic Button (Design Spell) ─────────────── */
+.magnetic-btn {
+  position: relative;
+  transition: transform var(--dur-normal) var(--ease-out);
+}
+
+/* ─────────────── Card Tilt (Design Spell) ─────────────── */
+.card-tilt {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+/* ─────────────── Ripple Effect (Design Spell) ─────────────── */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), 
+    rgba(245, 240, 235, 0.3) 0%, 
+    transparent 60%);
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity var(--dur-fast) var(--ease-out), 
+              transform var(--dur-slow) var(--ease-out);
+  pointer-events: none;
+}
+
+.ripple:active::after {
+  opacity: 1;
+  transform: scale(2.5);
+  transition: opacity var(--dur-instant) var(--ease-out);
+}
+
+/* ─────────────── Skeleton Shimmer ─────────────── */
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    110deg,
+    var(--surface) 0%,
+    var(--surface-2) 50%,
+    var(--surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s var(--ease-out) infinite;
+}
+
+/* ─────────────── Reduced Motion ─────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -310,52 +452,9 @@ h1, h2, h3, h4, h5, h6 {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-}
 
-/* User custom video wrapper */
-.video-wrapper {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: var(--radius-lg); /* Smooth, modern corners using token */
-  overflow: hidden;    /* Clips any native YouTube UI leaks */
-  box-shadow: var(--shadow-player); /* Premium cinematic shadow using token */
-  background: var(--bg); /* Use brand core background instead of raw black */
-}
-
-.video-wrapper iframe {
-  width: 100%;
-  height: 100%;
-}
-
-/* ─────────────── Micro-interaction utilities ─────────────── */
-.hover-lift {
-  transition: transform var(--dur-lift) var(--ease-ui),
-              box-shadow var(--dur-lift) var(--ease-ui);
-}
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4);
-}
-.hover-lift:active {
-  transform: translateY(0);
-  transition-duration: var(--dur-press);
-}
-
-.press-scale {
-  transition: transform var(--dur-hover) var(--ease-ui);
-}
-.press-scale:hover {
-  transform: scale(1.02);
-}
-.press-scale:active {
-  transform: scale(0.98);
-  transition-duration: var(--dur-press);
-}
-
-/* Smooth focus ring for all interactive elements */
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-  transition: outline-offset var(--dur-hover) var(--ease-ui);
+  .magnetic-btn,
+  .card-tilt {
+    transform: none !important;
+  }
 }

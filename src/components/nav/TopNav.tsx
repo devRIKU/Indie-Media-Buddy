@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { m, AnimatePresence } from "framer-motion";
 
 const LINKS = [
@@ -13,6 +13,10 @@ const LINKS = [
   { href: "/my-list",          label: "My List", match: (p: string) => p.startsWith("/my-list") },
 ] as const;
 
+/**
+ * Hint — Accessible tooltip with delightful reveal animation.
+ * Design Spell: Subtle spring animation on appear.
+ */
 function Hint({
   label,
   children,
@@ -25,7 +29,7 @@ function Hint({
 
   const show = () => {
     if (timer.current) window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setOpen(true), 380);
+    timer.current = window.setTimeout(() => setOpen(true), 400);
   };
   const hide = () => {
     if (timer.current) window.clearTimeout(timer.current);
@@ -46,16 +50,14 @@ function Hint({
           <m.span
             key="hint"
             role="tooltip"
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-            className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface-2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-fg"
-            style={{
-              boxShadow:
-                "0 4px 12px -4px rgba(0, 0, 0, 0.4)," +
-                " inset 0 0 0 1px rgba(229, 226, 225, 0.08)",
+            initial={{ opacity: 0, y: -6, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ 
+              duration: 0.2, 
+              ease: [0.34, 1.56, 0.64, 1] 
             }}
+            className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface-2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-fg shadow-md"
           >
             {label}
           </m.span>
@@ -66,14 +68,60 @@ function Hint({
 }
 
 /**
+ * MagneticButton — Design Spell that creates magnetic hover effect.
+ * Button subtly follows cursor when hovered.
+ */
+function MagneticButton({
+  children,
+  className = "",
+  ...props
+}: {
+  children: React.ReactNode;
+  className?: string;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouse = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!ref.current) return;
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = ref.current.getBoundingClientRect();
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    const deltaX = (clientX - centerX) * 0.15;
+    const deltaY = (clientY - centerY) * 0.15;
+    setPosition({ x: deltaX, y: deltaY });
+  }, []);
+
+  const reset = useCallback(() => {
+    setPosition({ x: 0, y: 0 });
+  }, []);
+
+  return (
+    <button
+      ref={ref}
+      onMouseMove={handleMouse}
+      onMouseLeave={reset}
+      className={className}
+      style={{
+        transform: `translate(${position.x}px, ${position.y}px)`,
+        transition: "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+      }}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
  * TopNav — floating glass pill, desktop only.
  *
- *   • Hidden below md — MobileBottomNav takes over on phones/tablets.
- *   • Framer Motion handles entrance (fade + blur drop on mount) and the
- *     shared active-indicator morph (layoutId, springy).
- *   • Custom Hint tooltip wraps the icon buttons for an accessible label.
- *   • Single border-radius token (rounded-full) — no irregular pill shapes.
- *   • Bounding box is one object: a glassy capsule. No nested shells.
+ * Redesigned with:
+ *   • Magnetic hover on logo and icon buttons (Design Spell)
+ *   • Refined glass morphism with subtle inner glow
+ *   • Smoother spring animations for active indicator
+ *   • Better visual hierarchy with refined spacing
  */
 export default function TopNav() {
   const pathname = usePathname();
@@ -90,30 +138,29 @@ export default function TopNav() {
     <AnimatePresence>
       <m.header
         key="topnav"
-        initial={{ opacity: 0, y: -12, filter: "blur(8px)" }}
+        initial={{ opacity: 0, y: -16, filter: "blur(12px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="pointer-events-none fixed inset-x-0 top-0 z-30 hidden justify-center px-4 pt-5 md:flex"
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="pointer-events-none fixed inset-x-0 top-0 z-30 hidden justify-center px-4 pt-4 md:flex"
       >
         <m.nav
           aria-label="Primary"
           animate={{
-            scale: scrolled ? 0.98 : 1,
-            opacity: scrolled ? 1 : 0.95,
+            scale: scrolled ? 0.97 : 1,
+            opacity: scrolled ? 1 : 0.96,
           }}
-          transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-          className="glass-nav pointer-events-auto flex max-w-full items-center gap-1 rounded-full p-1.5"
+          transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
+          className="glass-nav pointer-events-auto flex max-w-full items-center gap-1 rounded-full p-1.5 shadow-lg"
           style={{
-            boxShadow:
-              "inset 0 1px 0 rgba(229, 226, 225, 0.08)," +
-              " inset 0 0 0 1px rgba(229, 226, 225, 0.06)," +
-              " 0 8px 32px -12px rgba(22, 20, 20, 0.6)",
+            boxShadow: scrolled
+              ? "inset 0 1px 0 rgba(245, 240, 235, 0.1), inset 0 0 0 1px rgba(245, 240, 235, 0.08), 0 12px 40px -12px rgba(15, 14, 13, 0.7)"
+              : "inset 0 1px 0 rgba(245, 240, 235, 0.06), inset 0 0 0 1px rgba(245, 240, 235, 0.04), 0 8px 32px -12px rgba(15, 14, 13, 0.5)",
           }}
         >
           <Link
             href="/"
             aria-label="YouPlus home"
-            className="ml-2 mr-1 inline-flex shrink-0 items-center font-display text-sm font-semibold tracking-heading text-fg transition-transform duration-lift ease-ui hover:scale-[1.03] active:scale-100 active:duration-press sm:ml-3 sm:mr-2"
+            className="ml-2 mr-1 inline-flex shrink-0 items-center font-display text-sm font-semibold tracking-heading text-fg transition-transform duration-slow ease-out hover:scale-[1.04] active:scale-100 active:duration-fast sm:ml-3 sm:mr-2"
           >
             You<span className="text-accent">+</span>
           </Link>
@@ -135,7 +182,7 @@ export default function TopNav() {
                     href={link.href}
                     aria-current={active ? "page" : undefined}
                     className={
-                      "relative inline-flex min-h-9 items-center rounded-full px-3 py-1.5 text-sm font-medium transition-colors duration-hover ease-ui sm:px-3.5 " +
+                      "relative inline-flex min-h-9 items-center rounded-full px-3 py-1.5 text-sm font-medium transition-colors duration-normal ease-out sm:px-3.5 " +
                       (active ? "text-accent-fg" : "text-fg-2 hover:text-fg")
                     }
                   >
@@ -143,8 +190,12 @@ export default function TopNav() {
                       <m.span
                         aria-hidden="true"
                         layoutId="topnav-active"
-                        className="absolute inset-0 -z-10 rounded-full bg-accent"
-                        transition={{ type: "spring", stiffness: 360, damping: 32 }}
+                        className="absolute inset-0 -z-10 rounded-full bg-accent shadow-glow"
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 400, 
+                          damping: 30 
+                        }}
                       />
                     )}
                     {link.label}
@@ -157,10 +208,9 @@ export default function TopNav() {
           <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 bg-fg/10 sm:mx-1" />
 
           <Hint label="Search">
-            <Link
-              href="/search"
+            <MagneticButton
               aria-label="Search the catalogue"
-              className="mr-1.5 grid h-9 w-9 place-items-center rounded-full bg-fg/8 text-fg-2 transition-[transform,background-color,color] duration-hover ease-ui hover:scale-105 hover:bg-fg/12 hover:text-fg active:scale-95 active:duration-press active:ease-press"
+              className="mr-1.5 grid h-9 w-9 place-items-center rounded-full bg-fg/8 text-fg-2 transition-[background-color,color] duration-normal ease-out hover:bg-fg/12 hover:text-fg active:scale-95 active:duration-fast"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -173,14 +223,13 @@ export default function TopNav() {
                 <circle cx="11" cy="11" r="7" />
                 <path d="m20 20-3.5-3.5" />
               </svg>
-            </Link>
+            </MagneticButton>
           </Hint>
 
           <Hint label="Account">
-            <button
-              type="button"
+            <MagneticButton
               aria-label="Account"
-              className="mr-1.5 grid h-9 w-9 place-items-center rounded-full bg-fg/8 text-fg-2 transition-[transform,background-color,color] duration-hover ease-ui hover:scale-105 hover:bg-fg/12 hover:text-fg active:scale-95 active:duration-press active:ease-press"
+              className="mr-1.5 grid h-9 w-9 place-items-center rounded-full bg-fg/8 text-fg-2 transition-[background-color,color] duration-normal ease-out hover:bg-fg/12 hover:text-fg active:scale-95 active:duration-fast"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -194,7 +243,7 @@ export default function TopNav() {
                 <circle cx="12" cy="8" r="4" />
                 <path d="M4 21a8 8 0 0 1 16 0" />
               </svg>
-            </button>
+            </MagneticButton>
           </Hint>
         </m.nav>
       </m.header>

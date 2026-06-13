@@ -11,20 +11,32 @@ const config: Config = {
     extend: {
       colors: {
         bg: "var(--bg)",
-        surface: "var(--surface)",
-        "surface-2": "var(--surface-2)",
-        "surface-3": "var(--surface-3)",
-        fg: "var(--fg)",
-        "fg-2": "var(--fg-2)",
+        surface: {
+          DEFAULT: "var(--surface)",
+          2: "var(--surface-2)",
+          3: "var(--surface-3)",
+        },
+        fg: {
+          DEFAULT: "var(--fg)",
+          2: "var(--fg-2)",
+        },
         muted: "var(--muted)",
         faint: "var(--faint)",
-        border: "var(--border)",
-        "border-2": "var(--border-2)",
-        accent: "var(--accent)",
-        "accent-hover": "var(--accent-hover)",
-        "accent-press": "var(--accent-press)",
-        "accent-fg": "var(--accent-fg)",
-        "accent-soft": "var(--accent-soft)",
+        border: {
+          DEFAULT: "var(--border)",
+          2: "var(--border-2)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          hover: "var(--accent-hover)",
+          press: "var(--accent-press)",
+          fg: "var(--accent-fg)",
+          soft: "var(--accent-soft)",
+        },
+        success: "var(--success)",
+        warning: "var(--warning)",
+        error: "var(--error)",
+        info: "var(--info)",
       },
       fontFamily: {
         display: ["var(--font-display)", "Charter", "Georgia", "serif"],
@@ -38,6 +50,7 @@ const config: Config = {
         lg:      ["var(--text-lg)",   { lineHeight: "var(--lh-snug)" }],
         xl:      ["var(--text-xl)",   { lineHeight: "var(--lh-snug)" }],
         "2xl":   ["var(--text-2xl)",  { lineHeight: "var(--lh-tight)" }],
+        "3xl":   ["var(--text-3xl)",  { lineHeight: "var(--lh-tight)" }],
         display: ["var(--text-display)", { lineHeight: "var(--lh-display)", letterSpacing: "var(--tr-display)" }],
       },
       fontWeight: {
@@ -68,7 +81,7 @@ const config: Config = {
         lg:   "var(--radius-lg)",
         xl:   "var(--radius-xl)",
         "2xl":"var(--radius-2xl)",
-        full: "9999px",
+        full: "var(--radius-full)",
       },
       maxWidth: {
         body:    "var(--measure-body)",
@@ -77,33 +90,39 @@ const config: Config = {
         container: "1440px",
       },
       boxShadow: {
+        sm:   "var(--shadow-sm)",
+        md:   "var(--shadow-md)",
+        lg:   "var(--shadow-lg)",
+        xl:   "var(--shadow-xl)",
         card:       "var(--shadow-card)",
         "card-hover": "var(--shadow-card-hover)",
         player:     "var(--shadow-player)",
-        inner:      "inset 0 1px 1px rgba(255,255,255,0.06)",
+        glow:       "0 0 20px rgba(245, 240, 235, 0.15)",
       },
       borderColor: {
         DEFAULT: "var(--border)",
       },
       transitionTimingFunction: {
-        DEFAULT:  "var(--ease-ui)",
+        DEFAULT:  "var(--ease-out)",
+        out:      "var(--ease-out)",
+        "in-out": "var(--ease-in-out)",
+        spring:   "var(--ease-spring)",
         press:    "var(--ease-press)",
-        ui:       "var(--ease-ui)",
-        movement: "var(--ease-movement)",
-        reveal:   "var(--ease-reveal)",
       },
       transitionDuration: {
-        DEFAULT: "var(--dur-hover)",
-        press:   "var(--dur-press)",
-        hover:   "var(--dur-hover)",
-        lift:    "var(--dur-lift)",
-        nav:     "var(--dur-nav)",
+        DEFAULT: "var(--dur-normal)",
+        instant: "var(--dur-instant)",
+        fast:    "var(--dur-fast)",
+        normal:  "var(--dur-normal)",
+        slow:    "var(--dur-slow)",
         reveal:  "var(--dur-reveal)",
-        image:   "var(--dur-image)",
+        cinematic: "var(--dur-cinematic)",
       },
       animation: {
-        "fade-in": "fadeIn 600ms cubic-bezier(.2,.7,.2,1) both",
-        "slide-up": "slideUp 700ms cubic-bezier(.2,.7,.2,1) both",
+        "fade-in": "fadeIn 600ms var(--ease-out) both",
+        "slide-up": "slideUp 700ms var(--ease-out) both",
+        "scale-in": "scaleIn 500ms var(--ease-spring) both",
+        "blur-in": "blurIn 500ms var(--ease-out) both",
         first: "moveVertical 30s ease infinite",
         second: "moveInCircle 20s reverse infinite",
         third: "moveInCircle 40s linear infinite",
@@ -112,37 +131,19 @@ const config: Config = {
       },
       keyframes: {
         moveHorizontal: {
-          "0%": {
-            transform: "translateX(-50%) translateY(-10%)",
-          },
-          "50%": {
-            transform: "translateX(50%) translateY(10%)",
-          },
-          "100%": {
-            transform: "translateX(-50%) translateY(-10%)",
-          },
+          "0%": { transform: "translateX(-50%) translateY(-10%)" },
+          "50%": { transform: "translateX(50%) translateY(10%)" },
+          "100%": { transform: "translateX(-50%) translateY(-10%)" },
         },
         moveInCircle: {
-          "0%": {
-            transform: "rotate(0deg)",
-          },
-          "50%": {
-            transform: "rotate(180deg)",
-          },
-          "100%": {
-            transform: "rotate(360deg)",
-          },
+          "0%": { transform: "rotate(0deg)" },
+          "50%": { transform: "rotate(180deg)" },
+          "100%": { transform: "rotate(360deg)" },
         },
         moveVertical: {
-          "0%": {
-            transform: "translateY(-50%)",
-          },
-          "50%": {
-            transform: "translateY(50%)",
-          },
-          "100%": {
-            transform: "translateY(-50%)",
-          },
+          "0%": { transform: "translateY(-50%)" },
+          "50%": { transform: "translateY(50%)" },
+          "100%": { transform: "translateY(-50%)" },
         },
         fadeIn: {
           from: { opacity: "0" },
@@ -151,6 +152,14 @@ const config: Config = {
         slideUp: {
           from: { opacity: "0", transform: "translateY(16px)" },
           to: { opacity: "1", transform: "translateY(0)" },
+        },
+        scaleIn: {
+          from: { opacity: "0", transform: "scale(0.95)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
+        blurIn: {
+          from: { opacity: "0", filter: "blur(8px)" },
+          to: { opacity: "1", filter: "blur(0px)" },
         },
       },
     },

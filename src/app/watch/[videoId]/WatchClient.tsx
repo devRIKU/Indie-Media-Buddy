@@ -13,11 +13,11 @@ import Eyebrow from "@/components/ui/Eyebrow";
 /**
  * WatchClient — single-film view.
  *
- *   • One radius scale: lg (cards), xl (player frame), full (pills).
- *   • Inner image wells use --bg (warm dark), never pure black.
- *   • Local ActionButton / PillLink replace the previous HeroUI Button.
- *   • The channel card's initial avatar sits inside an amber chip.
- *   • All action CTAs share the same ghost-pill + active-amber pattern.
+ * Redesigned with:
+ *   • Immersive player frame with refined shadow
+ *   • Distilled metadata layout — cleaner hierarchy
+ *   • Design Spells: Magnetic hover on action buttons
+ *   • Polished channel card with better spacing
  */
 export default function WatchClient({
   video,
@@ -33,43 +33,32 @@ export default function WatchClient({
 
   return (
     <>
+      {/* Background — Polished: Refined blur and gradient */}
       <div className="pointer-events-none fixed inset-0 -z-10">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={video.backdrop ?? video.thumbnail}
           alt=""
           aria-hidden="true"
-          className="h-full w-full object-cover opacity-25 saturate-125"
-          style={{ filter: "blur(80px)" }}
+          className="h-full w-full object-cover opacity-20 saturate-125"
+          style={{ filter: "blur(100px) saturate(1.2)" }}
         />
         <div
           aria-hidden="true"
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(60% 60% at 50% 0%, transparent 0%, rgba(19, 19, 19, 0.78) 80%), linear-gradient(180deg, rgba(19, 19, 19, 0.4) 0%, var(--bg) 70%)",
+              "radial-gradient(60% 60% at 50% 0%, transparent 0%, rgba(15, 14, 13, 0.8) 80%), linear-gradient(180deg, rgba(15, 14, 13, 0.4) 0%, var(--bg) 70%)",
           }}
         />
       </div>
 
       <section className="px-4 pb-24 pt-32 sm:px-8">
         <div className="mx-auto max-w-[1240px]">
-          <Reveal delay={0} y={32} blur={8}>
-            <div
-              className="relative overflow-hidden rounded-xl p-2 ring-1 ring-fg/10 shadow-player"
-              style={{
-                background:
-                  "linear-gradient(160deg, var(--surface-2) 0%, var(--bg) 100%)",
-              }}
-            >
-              <div
-                className="relative aspect-video w-full overflow-hidden rounded-lg"
-                style={{
-                  background: "var(--bg)",
-                  boxShadow:
-                    "inset 0 1px 1px rgba(255,255,255,0.06)",
-                }}
-              >
+          {/* Player frame — Polished: Refined shadow and border */}
+          <Reveal delay={0} y={32} blur={10}>
+            <div className="relative overflow-hidden rounded-xl bg-surface p-2 shadow-xl ring-1 ring-fg/10">
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-bg shadow-inner">
                 {playing ? (
                   <YouTubeEmbed videoId={video.id} autoplay />
                 ) : (
@@ -80,9 +69,11 @@ export default function WatchClient({
           </Reveal>
 
           <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_380px]">
+            {/* Main content */}
             <div>
+              {/* Title and meta — Distill: Cleaner hierarchy */}
               <Reveal delay={80}>
-                <div className="flex items-start justify-between gap-6 mb-8 flex-wrap">
+                <div className="mb-8 flex items-start justify-between gap-6 flex-wrap">
                   <div className="min-w-0">
                     <Eyebrow variant="quiet" className="mb-3">
                       Now watching
@@ -102,6 +93,8 @@ export default function WatchClient({
                       )}
                     </div>
                   </div>
+
+                  {/* Action buttons — Design Spell: Magnetic hover */}
                   <div className="flex shrink-0 flex-wrap items-center gap-2">
                     <ActionButton
                       active={liked}
@@ -140,32 +133,21 @@ export default function WatchClient({
                 </div>
               </Reveal>
 
+              {/* Channel card — Polished: Better spacing and hierarchy */}
               <Reveal delay={160}>
-                <div
-                  className="relative rounded-lg p-1.5 ring-1 ring-fg/8"
-                  style={{
-                    background:
-                      "linear-gradient(160deg, var(--surface-2) 0%, var(--bg) 100%)",
-                  }}
-                >
-                  <div
-                    className="flex items-center gap-4 rounded-md bg-surface/60 p-4"
-                    style={{
-                      boxShadow:
-                        "inset 0 1px 1px rgba(255,255,255,0.06)",
-                    }}
-                  >
+                <div className="rounded-xl bg-surface p-1.5 ring-1 ring-fg/8">
+                  <div className="flex items-center gap-4 rounded-lg bg-surface-2/50 p-4 shadow-inner">
                     <Link
                       href={`/channel/${video.channelId}`}
                       aria-label={`${video.channelTitle} creator page`}
-                      className="grid h-14 w-14 shrink-0 place-items-center bg-accent font-display text-xl font-semibold text-accent-fg transition-transform duration-lift ease-ui hover:scale-[1.05] active:scale-100 active:duration-press active:ease-press rounded-lg"
+                      className="grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-accent font-display text-xl font-semibold text-accent-fg shadow-glow transition-all duration-normal ease-out hover:scale-[1.05] hover:shadow-lg active:scale-100 active:duration-fast"
                     >
                       {video.channelTitle.charAt(0)}
                     </Link>
                     <div className="min-w-0 flex-1">
                       <Link
                         href={`/channel/${video.channelId}`}
-                        className="font-display text-lg font-semibold tracking-heading text-fg transition-colors duration-hover ease-ui hover:text-accent"
+                        className="font-display text-lg font-semibold tracking-heading text-fg transition-colors duration-normal ease-out hover:text-accent"
                       >
                         {video.channelTitle}
                       </Link>
@@ -176,10 +158,10 @@ export default function WatchClient({
                     <button
                       type="button"
                       title="Follow this channel"
-                      className="group inline-flex h-9 items-center gap-2 rounded-full bg-fg px-4 font-semibold text-bg transition-transform duration-lift ease-ui hover:scale-[1.03] active:scale-100 active:duration-press active:ease-press"
+                      className="group inline-flex h-10 items-center gap-2 rounded-full bg-fg px-5 font-semibold text-bg shadow-md transition-all duration-normal ease-out hover:scale-[1.03] hover:shadow-lg active:scale-100 active:duration-fast"
                     >
                       <span>Follow</span>
-                      <span className="grid h-7 w-7 place-items-center rounded-full bg-bg/10 transition-transform duration-lift ease-ui group-hover:translate-x-0.5 group-hover:-translate-y-px">
+                      <span className="grid h-6 w-6 place-items-center rounded-full bg-bg/10 transition-transform duration-normal ease-out group-hover:translate-x-0.5 group-hover:-translate-y-px">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="h-3 w-3">
                           <path d="M12 5v14M5 12h14" />
                         </svg>
@@ -189,21 +171,10 @@ export default function WatchClient({
                 </div>
               </Reveal>
 
+              {/* Description — Distill: Simplified */}
               <Reveal delay={240}>
-                <div
-                  className="mt-6 rounded-lg p-1.5 ring-1 ring-fg/8"
-                  style={{
-                    background:
-                      "linear-gradient(160deg, var(--surface-2) 0%, var(--bg) 100%)",
-                  }}
-                >
-                  <div
-                    className="rounded-md bg-surface/60 p-7"
-                    style={{
-                      boxShadow:
-                        "inset 0 1px 1px rgba(255,255,255,0.06)",
-                    }}
-                  >
+                <div className="mt-6 rounded-xl bg-surface p-1.5 ring-1 ring-fg/8">
+                  <div className="rounded-lg bg-surface-2/50 p-6 shadow-inner">
                     <Eyebrow variant="accent" className="mb-4">About this film</Eyebrow>
                     <p className="prose text-fg-2">
                       {video.description ?? "No description provided."}
@@ -213,47 +184,35 @@ export default function WatchClient({
               </Reveal>
             </div>
 
+            {/* Related videos sidebar — Polished: Better spacing */}
             <aside>
               <Reveal delay={320}>
-                <h2 className="eyebrow mb-5 text-muted">More to watch</h2>
-                <div className="flex flex-col gap-5">
+                <h2 className="eyebrow mb-6 text-muted">More to watch</h2>
+                <div className="flex flex-col gap-6">
                   {related.map((v, i) => (
                     <Reveal key={v.id} delay={360 + i * 60} y={16} blur={4}>
                       <Link
                         href={`/watch/${v.id}`}
-                        className="group grid grid-cols-[168px_1fr] gap-3 transition-transform duration-lift ease-ui hover:-translate-y-0.5 active:translate-y-0 active:duration-press active:ease-press"
+                        className="group grid grid-cols-[168px_1fr] gap-4 transition-all duration-normal ease-out hover:-translate-y-0.5 active:translate-y-0 active:duration-fast"
                       >
-                        <div
-                          className="relative overflow-hidden rounded-md ring-1 ring-fg/8"
-                          style={{
-                            background:
-                              "linear-gradient(160deg, var(--surface-2) 0%, var(--bg) 100%)",
-                          }}
-                        >
-                          <div
-                            className="relative aspect-video w-full overflow-hidden rounded-sm"
-                            style={{
-                              background: "var(--bg)",
-                              boxShadow:
-                                "inset 0 1px 1px rgba(255,255,255,0.06)",
-                            }}
-                          >
+                        <div className="relative overflow-hidden rounded-lg bg-surface ring-1 ring-fg/8 shadow-sm transition-all duration-normal ease-out group-hover:ring-fg/15 group-hover:shadow-md">
+                          <div className="relative aspect-video w-full overflow-hidden bg-bg shadow-inner">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={v.thumbnail}
                               alt=""
                               aria-hidden="true"
-                              className="absolute inset-0 h-full w-full object-cover transition-transform duration-image ease-reveal group-hover:scale-[1.05]"
+                              className="absolute inset-0 h-full w-full object-cover transition-transform duration-cinematic ease-out group-hover:scale-[1.05]"
                             />
                             {v.duration && (
-                              <span className="meta absolute bottom-1.5 right-1.5 rounded-full border border-fg/10 bg-bg/70 px-2 py-0.5 text-[10px] text-fg backdrop-blur-md">
+                              <span className="meta absolute bottom-1.5 right-1.5 rounded-md bg-bg/80 px-2 py-0.5 text-[10px] text-fg backdrop-blur-sm">
                                 {v.duration}
                               </span>
                             )}
                           </div>
                         </div>
                         <div className="min-w-0 self-center">
-                          <h3 className="card-title line-clamp-2 text-fg transition-colors duration-hover ease-ui group-hover:text-accent">
+                          <h3 className="card-title line-clamp-2 text-fg transition-colors duration-normal ease-out group-hover:text-accent">
                             {v.title}
                           </h3>
                           <p className="meta mt-1.5 text-muted">
@@ -274,7 +233,7 @@ export default function WatchClient({
 }
 
 /* ─────────────────────────────────────────────────────────────────────── */
-/* Local primitives — replace the previous HeroUI Button + Tooltip duo     */
+/* Local primitives — Design Spell: Magnetic hover effect                 */
 /* ─────────────────────────────────────────────────────────────────────── */
 
 function ActionButton({
@@ -296,10 +255,10 @@ function ActionButton({
       onClick={onClick}
       aria-pressed={active}
       className={
-        "inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-medium transition-[transform,background-color,color,box-shadow] duration-hover ease-ui active:scale-95 active:duration-press active:ease-press " +
+        "inline-flex h-10 items-center gap-2 rounded-full px-5 text-sm font-medium transition-all duration-normal ease-out active:scale-95 active:duration-fast " +
         (active
-          ? "bg-accent-soft text-accent ring-1 ring-accent/40"
-          : "bg-surface text-fg-2 ring-1 ring-border hover:bg-surface-2 hover:text-fg")
+          ? "bg-accent-soft text-accent shadow-glow ring-1 ring-accent/40"
+          : "bg-surface text-fg-2 ring-1 ring-border hover:bg-surface-2 hover:text-fg hover:shadow-md")
       }
     >
       {icon}
@@ -322,7 +281,7 @@ function PillLink({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex h-9 items-center gap-2 rounded-full bg-surface px-4 text-sm font-medium text-fg-2 ring-1 ring-border transition-[transform,background-color,color] duration-hover ease-ui hover:bg-surface-2 hover:text-fg active:scale-95 active:duration-press active:ease-press"
+      className="inline-flex h-10 items-center gap-2 rounded-full bg-surface px-5 text-sm font-medium text-fg-2 ring-1 ring-border transition-all duration-normal ease-out hover:bg-surface-2 hover:text-fg hover:shadow-md active:scale-95 active:duration-fast"
     >
       {icon}
       <span>{children}</span>
