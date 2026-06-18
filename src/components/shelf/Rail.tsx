@@ -5,6 +5,7 @@ import type { VideoItem } from "@/lib/types";
 import PosterCard from "./PosterCard";
 import VideoCard from "./VideoCard";
 import ProgressiveBlur from "@/components/ui/ProgressiveBlur";
+import { RailSkeleton } from "@/components/ui/Skeleton";
 
 type RailProps = {
   title: string;
@@ -12,6 +13,7 @@ type RailProps = {
   videos: VideoItem[];
   style?: "poster" | "video";
   showRank?: boolean;
+  loading?: boolean;
 };
 
 /**
@@ -33,6 +35,7 @@ export default function Rail({
   videos,
   style = "poster",
   showRank = false,
+  loading = false,
 }: RailProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
@@ -89,6 +92,10 @@ export default function Rail({
     const step = Math.max(el.clientWidth * 0.85, 320);
     el.scrollBy({ left: step * dir, behavior: "smooth" });
   };
+
+  if (loading) {
+    return <RailSkeleton style={style} />;
+  }
 
   if (videos.length === 0) return null;
 

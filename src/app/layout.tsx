@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Hanken_Grotesk, Inter } from "next/font/google";
+import { Outfit, Inter } from "next/font/google";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import TopNav from "@/components/nav/TopNav";
@@ -10,15 +10,15 @@ import Providers from "./providers";
  * Three typefaces, chosen for an editorial / cinematic / quietly authoritative
  * brand.
  *
- *  - Hanken Grotesk (display): clean, variable grotesque with high editorial feel.
+ *  - Outfit (display): geometric sans with distinctive character, editorial presence.
  *  - Inter (body): classic, highly readable sans-serif.
  *  - Geist Mono (meta): companion for durations, view counts, and eyebrow labels.
  */
-const hanken = Hanken_Grotesk({
+const outfit = Outfit({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-display",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 const inter = Inter({
@@ -75,7 +75,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${hanken.variable} ${inter.variable} ${GeistMono.variable}`}
+      className={`dark ${outfit.variable} ${inter.variable} ${GeistMono.variable}`}
     >
       <body className="overflow-x-hidden bg-bg text-fg antialiased">
         <BackgroundGradientAnimation 

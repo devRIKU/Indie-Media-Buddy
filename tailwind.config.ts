@@ -39,7 +39,7 @@ const config: Config = {
         info: "var(--info)",
       },
       fontFamily: {
-        display: ["var(--font-display)", "Charter", "Georgia", "serif"],
+        display: ["var(--font-display)", "Outfit", "Segoe UI", "system-ui", "sans-serif"],
         sans: ["var(--font-sans)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "Menlo", "monospace"],
       },
@@ -58,6 +58,8 @@ const config: Config = {
         medium:   "500",
         semibold: "600",
         bold:     "700",
+        extrabold: "800",
+        black:    "900",
       },
       lineHeight: {
         display: "var(--lh-display)",
@@ -94,10 +96,7 @@ const config: Config = {
         md:   "var(--shadow-md)",
         lg:   "var(--shadow-lg)",
         xl:   "var(--shadow-xl)",
-        card:       "var(--shadow-card)",
-        "card-hover": "var(--shadow-card-hover)",
-        player:     "var(--shadow-player)",
-        glow:       "0 0 20px rgba(245, 240, 235, 0.15)",
+        glow: "var(--shadow-glow)",
       },
       borderColor: {
         DEFAULT: "var(--border)",

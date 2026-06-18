@@ -29,15 +29,10 @@ export default function PosterCard({
     <Link
       href={`/watch/${video.id}`}
       aria-label={`Watch ${video.title}`}
-      className={[
-        "group relative block w-[180px] flex-shrink-0 sm:w-[200px] md:w-[220px]",
-        "transition-transform duration-slow ease-out will-change-transform",
-        "hover:z-10 hover:scale-[1.04]",
-        "active:scale-[1.02] active:duration-fast",
-      ].join(" ")}
+      className="poster-card-link group relative block w-[180px] flex-shrink-0 sm:w-[200px] md:w-[220px]"
     >
       {/* Card container — Distill: Simplified, no gradient background */}
-      <div className="relative aspect-[2/3] overflow-hidden rounded-lg ring-1 ring-fg/8 transition-all duration-slow ease-out group-hover:ring-fg/15 group-hover:shadow-xl">
+      <div className="poster-card relative aspect-[2/3] overflow-hidden rounded-lg ring-1 ring-fg/8 transition-all duration-slow ease-out group-hover:ring-fg/15 group-hover:shadow-xl">
         {/* Image well */}
         <div className="relative h-full w-full overflow-hidden bg-surface">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -45,37 +40,30 @@ export default function PosterCard({
             src={video.thumbnail}
             alt={video.title}
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-cinematic ease-out group-hover:scale-[1.06]"
+            className="poster-card-image absolute inset-0 h-full w-full object-cover transition-transform duration-cinematic ease-out group-hover:scale-[1.06]"
           />
 
           {/* Bottom scrim — simplified for legibility */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-[55%]"
-            style={{
-              background:
-                "linear-gradient(180deg, transparent 0%, rgba(15, 14, 13, 0.7) 60%, rgba(15, 14, 13, 0.95) 100%)",
-            }}
-          />
+          <div aria-hidden="true" className="poster-scrim" />
 
           {/* Badges — simplified, cleaner styling */}
           <div className="absolute inset-x-2 top-2 flex items-start justify-between gap-1">
             {rank && rank <= 10 ? (
-              <span className="eyebrow rounded-md bg-bg/80 px-2 py-0.5 text-[10px] font-semibold text-accent backdrop-blur-sm shadow-glow">
+              <span className="poster-rank eyebrow rounded-md bg-bg/80 px-2 py-0.5 text-[10px] font-semibold text-accent backdrop-blur-sm shadow-glow">
                 #{rank}
               </span>
             ) : (
               <span aria-hidden="true" />
             )}
             {video.duration && (
-              <span className="meta rounded-md bg-bg/80 px-2 py-0.5 text-[10px] text-fg backdrop-blur-sm">
+              <span className="poster-duration meta rounded-md bg-bg/80 px-2 py-0.5 text-[10px] text-fg backdrop-blur-sm">
                 {video.duration}
               </span>
             )}
           </div>
 
           {/* Hover play — Design Spell: Spring animation */}
-          <div className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-normal ease-out group-hover:opacity-100">
+          <div className="poster-card-play pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-normal ease-out group-hover:opacity-100">
             <span className="grid h-14 w-14 place-items-center rounded-full bg-fg/95 shadow-xl transition-transform duration-slow ease-out scale-90 group-hover:scale-100">
               <svg viewBox="0 0 24 24" className="h-5 w-5 translate-x-0.5 fill-bg">
                 <path d="M8 5v14l11-7z" />

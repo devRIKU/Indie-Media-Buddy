@@ -29,15 +29,10 @@ export default function VideoCard({
     <Link
       href={`/watch/${video.id}`}
       aria-label={`Watch ${video.title}`}
-      className={[
-        "group block w-[300px] flex-shrink-0 sm:w-[340px]",
-        "transition-transform duration-slow ease-out will-change-transform",
-        "hover:-translate-y-1",
-        "active:translate-y-0 active:duration-fast",
-      ].join(" ")}
+      className="video-card-link group block w-[300px] flex-shrink-0 sm:w-[340px]"
     >
       {/* Card container */}
-      <div className="relative aspect-video overflow-hidden rounded-lg ring-1 ring-fg/8 transition-all duration-slow ease-out group-hover:ring-fg/15 group-hover:shadow-lg">
+      <div className="video-card relative aspect-video overflow-hidden rounded-lg ring-1 ring-fg/8 transition-all duration-slow ease-out group-hover:ring-fg/15 group-hover:shadow-lg">
         {/* Image well — Distill: no gradient background, just clean dark */}
         <div className="relative h-full w-full overflow-hidden bg-surface">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -45,18 +40,18 @@ export default function VideoCard({
             src={video.thumbnail}
             alt={video.title}
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-cinematic ease-out group-hover:scale-[1.05]"
+            className="video-card-image absolute inset-0 h-full w-full object-cover transition-transform duration-cinematic ease-out group-hover:scale-[1.05]"
           />
 
           {/* Duration badge — simplified */}
           {video.duration && (
-            <span className="meta absolute bottom-2 right-2 rounded-md bg-bg/80 px-2 py-0.5 text-[10px] font-medium text-fg backdrop-blur-sm">
+            <span className="video-card-duration meta absolute bottom-2 right-2 rounded-md bg-bg/80 px-2 py-0.5 text-[10px] font-medium text-fg backdrop-blur-sm">
               {video.duration}
             </span>
           )}
 
           {/* Hover play — Design Spell: Spring animation */}
-          <div className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-normal ease-out group-hover:opacity-100">
+          <div className="video-card-play pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-normal ease-out group-hover:opacity-100">
             <span className="grid h-12 w-12 place-items-center rounded-full bg-fg/95 shadow-lg transition-transform duration-slow ease-out scale-90 group-hover:scale-100">
               <svg viewBox="0 0 24 24" className="h-5 w-5 translate-x-0.5 fill-bg">
                 <path d="M8 5v14l11-7z" />
@@ -77,7 +72,7 @@ export default function VideoCard({
       </div>
 
       {/* Meta — Distill: Simplified, cleaner hierarchy */}
-      <div className="mt-3 px-1">
+      <div className="video-card-meta mt-3 px-1">
         <h3 className="card-title line-clamp-2 text-fg transition-colors duration-normal ease-out group-hover:text-accent">
           {video.title}
         </h3>

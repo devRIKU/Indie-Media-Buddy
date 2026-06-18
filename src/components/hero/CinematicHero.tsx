@@ -112,32 +112,17 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
             alt=""
             loading={i === 0 ? "eager" : "lazy"}
             fetchPriority={i === 0 ? "high" : undefined}
-            className="h-full w-full object-cover will-change-transform"
+            className="hero-backdrop"
             style={{
               objectPosition: "center 30%",
               transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.3}px) scale(1.05)`,
-              transition: "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           />
         </div>
       ))}
 
-      {/* Editorial scrim — Distill: simplified gradient for readability */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(90deg, " +
-              "rgba(15, 14, 13, 0.98) 0%, " +
-              "rgba(15, 14, 13, 0.90) 28%, " +
-              "rgba(15, 14, 13, 0.68) 48%, " +
-              "rgba(15, 14, 13, 0.18) 70%, " +
-              "transparent 92%" +
-            "), " +
-            "linear-gradient(180deg, transparent 50%, rgba(15, 14, 13, 0.6) 85%, var(--bg) 100%)",
-        }}
-      />
+      {/* Editorial scrim — Distill: simplified gradient via CSS class */}
+      <div aria-hidden="true" className="hero-scrim" />
 
       <ProgressiveBlur position="bottom" height={240} intensity="strong" className="z-[5]" />
 
@@ -145,33 +130,29 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
       <div
         ref={stackRef}
         data-revealed="0"
-        className="relative z-10 grid h-full min-h-[100dvh] grid-cols-1 items-end gap-x-12 px-4 pb-24 pt-32 sm:px-8 md:grid-cols-12 md:items-center md:gap-x-16 md:px-12 md:pt-20"
+        className="relative z-10 grid h-full min-h-[100dvh] grid-cols-1 items-end gap-x-12 px-4 pb-24 pt-32 sm:px-8 md:grid-cols-12 md:items-center md:gap-x-16 md:px-12 md:pt-20 lg:gap-x-20"
       >
         {/* Left column — typography */}
-        <div key={current.id} className="md:col-span-7 lg:col-span-7">
-          <div data-reveal style={{ opacity: 0 }}>
-            <Eyebrow variant="accent" className="mb-6">
-              Editor&apos;s pick · {current.channelTitle}
-            </Eyebrow>
-          </div>
+        <div key={current.id} className="md:col-span-7 lg:col-span-7 xl:col-span-6">
+              <div data-reveal className="reveal-item">
+                <Eyebrow variant="accent" className="mb-6">
+                  Editor&apos;s pick · {current.channelTitle}
+                </Eyebrow>
+              </div>
 
-          <p
-            data-reveal
-            style={{ opacity: 0 }}
-            className="mb-3 font-display text-lg font-medium italic leading-snug text-fg-2"
-          >
-            {current.tagline}
-          </p>
+              <p
+                data-reveal
+                className="reveal-item mb-3 font-display text-lg font-medium italic leading-snug text-fg-2"
+              >
+                {current.tagline}
+              </p>
 
-          {/* Display headline — Design Spell: Stagger reveal */}
-          <h1
-            ref={titleRef}
-            className="display max-w-display text-fg"
-            aria-label={current.title}
-            style={{
-              textShadow: "0 2px 30px rgba(15, 14, 13, 0.6)",
-            }}
-          >
+              {/* Display headline — Design Spell: Stagger reveal */}
+              <h1
+                ref={titleRef}
+                className="display max-w-display text-fg hero-headline"
+                aria-label={current.title}
+              >
             {(current.title ?? "").split(" ").map((word, i) => (
               <span
                 key={`${current.id}-${i}`}
@@ -187,8 +168,7 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
 
           <div
             data-reveal
-            style={{ opacity: 0 }}
-            className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-fg-2 meta"
+            className="reveal-item mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-fg-2 meta"
           >
             <span>{new Date(current.publishedAt).getFullYear()}</span>
             <span className="text-faint">·</span>
@@ -203,23 +183,21 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
             ))}
           </div>
 
-          <p
-            data-reveal
-            style={{ opacity: 0 }}
-            className="prose mt-6 line-clamp-3 text-fg-2"
-          >
-            {current.description}
-          </p>
+              <p
+                data-reveal
+                className="reveal-item prose mt-6 line-clamp-3 text-fg-2"
+              >
+                {current.description}
+              </p>
 
-          {/* CTAs — Design Spell: Magnetic hover effect */}
-          <div
-            data-reveal
-            style={{ opacity: 0 }}
-            className="mt-9 flex flex-wrap items-center gap-4"
-          >
+              {/* CTAs — Design Spell: Magnetic hover effect */}
+              <div
+                data-reveal
+                className="reveal-item mt-9 flex flex-wrap items-center gap-4"
+              >
             <button
               onClick={() => window.location.href = `/watch/${current.id}`}
-              className="group flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-fg transition-all duration-normal ease-out hover:scale-[1.03] hover:shadow-glow active:scale-95 active:duration-fast"
+              className="hero-cta-primary group flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-fg transition-all duration-normal ease-out hover:scale-[1.03] hover:shadow-glow active:scale-95 active:duration-fast"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current transition-transform duration-normal ease-out group-hover:scale-110">
                 <path d="M8 5v14l11-7z" />
@@ -227,7 +205,7 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
               Watch now
             </button>
 
-            <button className="flex items-center gap-2 rounded-lg bg-fg/8 px-6 py-3 text-sm font-semibold text-fg backdrop-blur-md ring-1 ring-fg/15 transition-all duration-normal ease-out hover:bg-fg/12 hover:ring-fg/25 hover:scale-[1.02] active:scale-95 active:duration-fast">
+            <button className="hero-cta-secondary flex items-center gap-2 rounded-lg bg-fg/8 px-6 py-3 text-sm font-semibold text-fg backdrop-blur-md ring-1 ring-fg/15 transition-all duration-normal ease-out hover:bg-fg/12 hover:ring-fg/25 hover:scale-[1.02] active:scale-95 active:duration-fast">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -245,23 +223,23 @@ export default function CinematicHero({ items }: { items: FeaturedHeroItem[] }) 
         </div>
 
         {/* Right column — double-bezel preview */}
-        <div className="relative hidden md:col-span-5 md:block">
+        <div className="relative hidden md:col-span-5 md:block lg:col-span-6 xl:col-span-6">
           <DoubleBezelPreview items={items} active={active} mousePosition={mousePosition} />
 
           {/* Indicator strip */}
-          <div className="mt-6 flex items-center justify-center gap-2.5">
+          <div className="mt-8 flex items-center justify-center gap-2.5" role="tablist" aria-label="Featured items">
             {items.map((item, i) => (
               <button
                 key={item.id}
                 onClick={() => setActive(i)}
+                role="tab"
                 aria-label={`Featured ${i + 1}: ${item.title}`}
-                aria-current={i === active ? "true" : undefined}
-                className={
-                  "h-1.5 rounded-full transition-all duration-normal ease-out " +
-                  (i === active
-                    ? "w-8 bg-accent"
-                    : "w-1.5 bg-fg/20 hover:bg-fg/40")
-                }
+                aria-selected={i === active}
+                className="hero-indicator transition-all duration-normal ease-out"
+                style={{
+                  width: i === active ? "2rem" : "0.375rem",
+                  backgroundColor: i === active ? "var(--accent)" : "rgba(235, 233, 232, 0.2)",
+                }}
               />
             ))}
           </div>
@@ -285,24 +263,8 @@ function DoubleBezelPreview({
   mousePosition: { x: number; y: number };
 }) {
   return (
-    <div
-      className="relative aspect-[3/4] w-full overflow-hidden p-2 ring-1 ring-fg/10"
-      style={{
-        borderRadius: "var(--radius-2xl)",
-        background:
-          "linear-gradient(160deg, rgba(36, 35, 34, 0.6), rgba(15, 14, 13, 0.4))",
-        boxShadow:
-          "inset 0 1px 0 rgba(245, 240, 235, 0.08), inset 0 -1px 0 rgba(15, 14, 13, 0.5), 0 20px 60px -20px rgba(15, 14, 13, 0.7)",
-      }}
-    >
-      <div
-        className="relative h-full w-full overflow-hidden bg-bg"
-        style={{
-          borderRadius: "calc(var(--radius-2xl) - 0.5rem)",
-          boxShadow:
-            "inset 0 1px 2px rgba(245, 240, 235, 0.1), inset 0 0 0 1px rgba(245, 240, 235, 0.05)",
-        }}
-      >
+    <div className="double-bezel-preview">
+      <div className="double-bezel-inner">
         {items.map((item, i) => (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -310,22 +272,14 @@ function DoubleBezelPreview({
             src={item.thumbnail}
             alt={item.title}
             loading={i === 0 ? "eager" : "lazy"}
-            className="absolute inset-0 h-full w-full object-cover transition-opacity duration-cinematic ease-out"
+            className="double-bezel-image"
             style={{
               opacity: i === active ? 1 : 0,
               transform: `translate(${mousePosition.x * 0.15}px, ${mousePosition.y * 0.15}px) scale(1.08)`,
-              transition: "opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           />
         ))}
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-1/3"
-          style={{
-            background:
-              "linear-gradient(180deg, transparent, rgba(15, 14, 13, 0.6))",
-          }}
-        />
+        <div aria-hidden="true" className="double-bezel-scrim" />
       </div>
     </div>
   );
